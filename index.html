@@ -275,6 +275,37 @@
       <small id="memory-view-date" class="muted"></small>
     </div>
   </div>
+  <div id="memory-edit-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="memory-edit-title">
+    <form id="memory-edit-form" class="modal-content memory-edit-content">
+      <button class="modal-close" id="memory-edit-close" type="button" aria-label="Tutup">&times;</button>
+      <span class="eyebrow">KELOLA MEMORI</span>
+      <h3 id="memory-edit-title">Edit memori</h3>
+      <p class="muted">Ubah informasi atau pilih foto baru. Foto lama tetap dipakai jika tidak diganti.</p>
+      <img id="memory-edit-preview" class="memory-edit-preview" src="" alt="Pratinjau foto memori" />
+      <label class="memory-edit-image-picker" for="memory-edit-image-input">Pilih foto pengganti <span>JPG, PNG, atau WEBP · Maksimal 5 MB</span></label>
+      <input id="memory-edit-image-input" type="file" accept="image/*" hidden />
+      <label class="form-field" for="memory-edit-name"><span>Nama</span>
+        <input id="memory-edit-name" type="text" maxlength="150" />
+      </label>
+      <label class="form-field" for="memory-edit-birth-info"><span>TTL</span>
+        <input id="memory-edit-birth-info" type="text" maxlength="150" />
+      </label>
+      <label class="form-field" for="memory-edit-full-address"><span>Alamat lengkap</span>
+        <input id="memory-edit-full-address" type="text" maxlength="500" />
+      </label>
+      <label class="form-field" for="memory-edit-message"><span>Kesan &amp; pesan</span>
+        <textarea id="memory-edit-message" maxlength="1000" rows="4"></textarea>
+      </label>
+      <label class="form-field" for="memory-edit-instagram"><span>Instagram</span>
+        <input id="memory-edit-instagram" type="text" maxlength="200" placeholder="@username atau tautan profil" />
+      </label>
+      <label class="form-field" for="memory-edit-whatsapp"><span>WhatsApp</span>
+        <input id="memory-edit-whatsapp" type="tel" maxlength="30" placeholder="Nomor dengan kode negara" />
+      </label>
+      <div id="memory-edit-status" class="status" role="status" aria-live="polite"></div>
+      <button id="memory-edit-save" class="btn-primary" type="submit">Simpan perubahan <span>→</span></button>
+    </form>
+  </div>
   <aside id="app-update-banner" class="app-update-banner hidden" role="status" aria-live="polite">
     <div class="app-update-copy">
       <strong>Versi baru tersedia</strong>

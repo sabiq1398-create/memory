@@ -521,6 +521,7 @@ const renderMemories = () => {
               ${addressUrl ? `<a class="memory-action-link" href="${escapeHtml(addressUrl)}" target="_blank" rel="noopener noreferrer" aria-label="Buka alamat di Google Maps">⌖ Alamat</a>` : ''}
               ${instagramUrl ? `<a class="memory-action-link memory-action-instagram" href="${escapeHtml(instagramUrl)}" target="_blank" rel="noopener noreferrer" aria-label="Buka Instagram">◎ Instagram</a>` : ''}
               ${whatsappUrl ? `<a class="memory-action-link memory-action-whatsapp" href="${escapeHtml(whatsappUrl)}" target="_blank" rel="noopener noreferrer" aria-label="Buka WhatsApp">◉ WhatsApp</a>` : ''}
+              ${isAdmin ? `<button class="edit-memory" data-edit="${m.id}" type="button" aria-label="Edit memori ${escapeHtml(memoryName)}">✎ Edit</button>` : ''}
               ${canDelete ? `<button class="delete-memory" data-del="${m.id}" type="button" aria-label="Hapus memori ${escapeHtml(memoryName)}" title="Hapus">×</button>` : ''}
             </nav>
           </div>
@@ -548,11 +549,18 @@ const renderMemories = () => {
       await deleteMemory(btn.dataset.del);
     });
   });
+
+  gallery.querySelectorAll('.edit-memory').forEach(btn => {
+    btn.addEventListener('click', () => openMemoryEditModal(btn.dataset.edit));
+  });
 };
 
 // =========================================
 // MEMORY MODAL
 // =========================================
+let editingMemoryId = null;
+let selectedEditFile = null;
+
 const openMemoryModal = (id) => {
   const m = state.memories.find(x => String(x.id) === String(id));
   if (!m) return;
@@ -578,9 +586,33 @@ const openMemoryModal = (id) => {
   $('memory-modal').classList.remove('hidden');
 };
 
+const openMemoryEditModal = (id) => {
+  if (state.user?.role !== 'admin') return toast('Hanya administrator yang dapat mengedit memori.', 'error');
+  const memory = state.memories.find(item => String(item.id) === String(id));
+  if (!memory) return toast('Memori tidak ditemukan.', 'error');
+
+  editingMemoryId = String(memory.id);
+  selectedEditFile = null;
+  $('memory-edit-name').value = memory.name || '';
+  $('memory-edit-birth-info').value = memory.birth_info || '';
+  $('memory-edit-full-address').value = memory.full_address || memory.address || '';
+  $('memory-edit-message').value = memory.message || memory.caption || '';
+  $('memory-edit-instagram').value = memory.instagram || '';
+  $('memory-edit-whatsapp').value = memory.whatsapp || '';
+  $('memory-edit-image-input').value = '';
+  $('memory-edit-preview').src = memory.image_url || PLACEHOLDER.image;
+  $('memory-edit-status').className = 'status';
+  $('memory-edit-status').textContent = '';
+  $('memory-edit-modal').classList.remove('hidden');
+};
+
 $('memory-close').addEventListener('click', () => $('memory-modal').classList.add('hidden'));
 $('memory-modal').addEventListener('click', (e) => {
   if (e.target.id === 'memory-modal') $('memory-modal').classList.add('hidden');
+});
+$('memory-edit-close').addEventListener('click', () => $('memory-edit-modal').classList.add('hidden'));
+$('memory-edit-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'memory-edit-modal') $('memory-edit-modal').classList.add('hidden');
 });
 
 // =========================================
@@ -608,6 +640,176 @@ const deleteMemory = async (id) => {
   logActivity('delete_memory', { memory_id: id });
   loadMemories();
 };
+
+const getMemoryStoragePath = (imageUrl) => {
+  try {
+    const url = new URL(imageUrl);
+    const marker = '/storage/v1/object/public/memories/';
+    const index = url.pathname.indexOf(marker);
+    return index === -1 ? null : decodeURIComponent(url.pathname.slice(index + marker.length));
+  } catch {
+    return null;
+  }
+};
+
+$('memory-edit-image-input').addEventListener('change', (event) => {
+  const file = event.target.files[0];
+  const editingMemory = state.memories.find(item => String(item.id) === editingMemoryId);
+  const originalImage = editingMemory?.image_url || PLACEHOLDER.image;
+  selectedEditFile = null;
+  if (!file) {
+    $('memory-edit-preview').src = originalImage;
+    return;
+  }
+  const status = $('memory-edit-status');
+  if (state.user?.role !== 'admin') {
+    event.target.value = '';
+    $('memory-edit-preview').src = originalImage;
+    return toast('Hanya administrator yang dapat mengedit memori.', 'error');
+  }
+  if (!file.type.startsWith('image/')) {
+    event.target.value = '';
+    $('memory-edit-preview').src = originalImage;
+    status.className = 'status error';
+    status.textContent = 'File harus berupa gambar.';
+    return;
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    event.target.value = '';
+    $('memory-edit-preview').src = originalImage;
+    status.className = 'status error';
+    status.textContent = 'Ukuran foto maksimal 5 MB.';
+    return;
+  }
+
+  selectedEditFile = file;
+  const reader = new FileReader();
+  reader.onload = () => {
+    $('memory-edit-preview').src = reader.result;
+  };
+  reader.onerror = () => {
+    selectedEditFile = null;
+    $('memory-edit-preview').src = originalImage;
+    status.className = 'status error';
+    status.textContent = 'Foto tidak dapat dibaca. Coba pilih file lain.';
+  };
+  reader.readAsDataURL(file);
+});
+
+$('memory-edit-form').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  if (state.user?.role !== 'admin') return toast('Hanya administrator yang dapat mengedit memori.', 'error');
+  if (!editingMemoryId) return toast('Pilih memori yang akan diedit.', 'error');
+  if (!state.user) return toast('User belum siap.', 'error');
+
+  const memory = state.memories.find(item => String(item.id) === editingMemoryId);
+  if (!memory) return toast('Memori tidak ditemukan.', 'error');
+
+  const instagramInput = $('memory-edit-instagram').value.trim();
+  const whatsappInput = $('memory-edit-whatsapp').value.trim();
+  const instagramUrl = getInstagramUrl(instagramInput);
+  const whatsappUrl = getWhatsAppUrl(whatsappInput);
+  const status = $('memory-edit-status');
+  const button = $('memory-edit-save');
+  status.className = 'status';
+  status.textContent = '';
+  if (instagramInput && !instagramUrl) {
+    status.className = 'status error';
+    status.textContent = 'Masukkan username Instagram atau tautan profil yang valid.';
+    return;
+  }
+  if (whatsappInput && !whatsappUrl) {
+    status.className = 'status error';
+    status.textContent = 'Masukkan nomor WhatsApp dengan kode negara, misalnya 628123456789.';
+    return;
+  }
+
+  const memoryDetails = {
+    name: $('memory-edit-name').value.trim() || null,
+    birth_info: $('memory-edit-birth-info').value.trim() || null,
+    full_address: $('memory-edit-full-address').value.trim() || null,
+    message: $('memory-edit-message').value.trim() || null,
+    instagram: instagramUrl ? new URL(instagramUrl).pathname.split('/').filter(Boolean)[0] : null,
+    whatsapp: whatsappUrl ? whatsappUrl.split('/').pop() : null,
+  };
+  let uploadedImagePath = null;
+  let databaseUpdated = false;
+  button.disabled = true;
+  button.textContent = 'Menyimpan...';
+
+  try {
+    const { error: schemaError } = await sb.from('memories')
+      .select('name, birth_info, full_address, message, instagram, whatsapp')
+      .limit(0);
+    if (schemaError) {
+      if (['42703', 'PGRST204'].includes(schemaError.code)) {
+        throw new Error('Kolom detail memori belum tersedia. Jalankan data.sql terbaru di Supabase SQL Editor.');
+      }
+      throw schemaError;
+    }
+
+    const updates = { ...memoryDetails };
+    if (selectedEditFile) {
+      const extension = selectedEditFile.name.split('.').pop().toLowerCase();
+      const safeExtension = /^[a-z0-9]{1,8}$/.test(extension) ? extension : 'jpg';
+      uploadedImagePath = `${state.user.id}/${Date.now()}-edit.${safeExtension}`;
+      const { error: uploadError } = await sb.storage.from('memories')
+        .upload(uploadedImagePath, selectedEditFile, { cacheControl: '3600', upsert: false });
+      if (uploadError) throw uploadError;
+      updates.image_url = sb.storage.from('memories').getPublicUrl(uploadedImagePath).data.publicUrl;
+    }
+
+    const { error: updateError } = await sb.from('memories')
+      .update(updates)
+      .eq('id', editingMemoryId)
+      .select('id')
+      .single();
+    if (updateError) throw updateError;
+    databaseUpdated = true;
+
+    let oldImageCleanupFailed = false;
+    if (uploadedImagePath) {
+      const oldImagePath = getMemoryStoragePath(memory.image_url);
+      if (oldImagePath) {
+        try {
+          const { error: cleanupError } = await sb.storage.from('memories').remove([oldImagePath]);
+          if (cleanupError) throw cleanupError;
+        } catch (cleanupError) {
+          oldImageCleanupFailed = true;
+          console.error('Gagal menghapus foto lama:', cleanupError);
+        }
+      }
+    }
+
+    await logActivity('update_memory', { memory_id: editingMemoryId });
+    selectedEditFile = null;
+    editingMemoryId = null;
+    $('memory-edit-image-input').value = '';
+    $('memory-edit-modal').classList.add('hidden');
+    await loadMemories();
+    toast(
+      oldImageCleanupFailed ? 'Memori diperbarui, tetapi foto lama gagal dihapus.' : 'Memori berhasil diperbarui.',
+      oldImageCleanupFailed ? 'error' : 'success',
+    );
+  } catch (error) {
+    console.error(error);
+    let cleanupWarning = '';
+    if (uploadedImagePath && !databaseUpdated) {
+      try {
+        const { error: cleanupError } = await sb.storage.from('memories').remove([uploadedImagePath]);
+        if (cleanupError) throw cleanupError;
+      } catch (cleanupError) {
+        console.error('Gagal membersihkan foto yang tidak tersimpan:', cleanupError);
+        cleanupWarning = ' Foto baru yang gagal disimpan juga tidak dapat dibersihkan.';
+      }
+    }
+    status.className = 'status error';
+    status.textContent = 'Gagal menyimpan perubahan: ' + error.message + cleanupWarning;
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Simpan perubahan →';
+  }
+});
 
 // =========================================
 // UPLOAD

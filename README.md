@@ -1,6 +1,6 @@
 # Memori
 
-Album foto berbasis web dengan autentikasi Supabase, role pengguna dan administrator, unggah memori khusus admin, serta dukungan PWA.
+Album foto berbasis web dengan autentikasi Supabase, role pengguna dan administrator, pengelolaan memori khusus admin, serta dukungan PWA.
 
 ## Menjalankan lokal
 
@@ -27,7 +27,7 @@ Buka `http://localhost:8000`.
 
 4. Tambahkan domain produksi dan domain preview Vercel ke URL konfigurasi Auth Supabase.
 
-Setelah pembaruan detail memori, jalankan kembali `data.sql` agar kolom nama, TTL, alamat lengkap, kesan-pesan, Instagram, dan WhatsApp tersedia. Migrasi menyalin caption dan alamat lama ke kesan-pesan dan alamat lengkap tanpa menghapus kolom lama. Admin mengisi detail setiap memori pada form tambah memori; informasinya terlihat oleh semua pengguna yang masuk.
+Setelah pembaruan detail atau izin edit memori, jalankan kembali `data.sql` agar kolom dan policy terbaru tersedia. Admin dapat menambah serta mengedit informasi dan foto memori; RLS membatasi perubahan tersebut hanya untuk admin. Migrasi detail menyalin caption dan alamat lama ke kesan-pesan dan alamat lengkap tanpa menghapus kolom lama. Informasi memori terlihat oleh semua pengguna yang masuk.
 
 Migrasi pertama mereset role lama menjadi `user` karena versi demo sebelumnya mengizinkan perubahan role dari browser. Migrasi juga mengganti policy RLS pada tabel aplikasi `users`, `memories`, dan `activity_logs`.
 

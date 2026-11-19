@@ -279,6 +279,8 @@ GRANT UPDATE (address, instagram, whatsapp, bio)
   ON public.users TO authenticated;
 GRANT SELECT ON public.memory_user_profiles TO authenticated;
 GRANT SELECT, INSERT, DELETE ON public.memories TO authenticated;
+GRANT UPDATE (image_url, name, birth_info, full_address, message, instagram, whatsapp)
+  ON public.memories TO authenticated;
 GRANT SELECT, INSERT ON public.activity_logs TO authenticated;
 GRANT USAGE, SELECT ON SEQUENCE public.memories_id_seq TO authenticated;
 
@@ -326,6 +328,10 @@ CREATE POLICY memories_insert_admin
     AND
     user_id = (SELECT id FROM public.users WHERE auth_user_id = (SELECT auth.uid()))
   );
+CREATE POLICY memories_update_admin
+  ON public.memories FOR UPDATE TO authenticated
+  USING (public.is_memori_admin())
+  WITH CHECK (public.is_memori_admin());
 CREATE POLICY memories_delete_owner_or_admin
   ON public.memories FOR DELETE TO authenticated
   USING (
