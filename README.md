@@ -27,7 +27,7 @@ Buka `http://localhost:8000`.
 
 4. Tambahkan domain produksi dan domain preview Vercel ke URL konfigurasi Auth Supabase.
 
-Setelah pembaruan fitur profil dan detail memori, jalankan kembali `data.sql` agar kolom alamat, Instagram, WhatsApp, dan biodata tersedia di profil dan memori. Admin dapat mengisi detail tersebut pada form tambah memori; informasinya terlihat oleh semua pengguna yang masuk.
+Setelah pembaruan detail memori, jalankan kembali `data.sql` agar kolom nama, TTL, alamat lengkap, kesan-pesan, Instagram, dan WhatsApp tersedia. Migrasi menyalin caption dan alamat lama ke kesan-pesan dan alamat lengkap tanpa menghapus kolom lama. Admin mengisi detail setiap memori pada form tambah memori; informasinya terlihat oleh semua pengguna yang masuk.
 
 Migrasi pertama mereset role lama menjadi `user` karena versi demo sebelumnya mengizinkan perubahan role dari browser. Migrasi juga mengganti policy RLS pada tabel aplikasi `users`, `memories`, dan `activity_logs`.
 

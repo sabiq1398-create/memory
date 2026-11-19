@@ -22,6 +22,10 @@ CREATE TABLE IF NOT EXISTS public.memories (
   user_id uuid NOT NULL REFERENCES public.users(id),
   image_url text NOT NULL,
   caption text,
+  name text,
+  birth_info text,
+  full_address text,
+  message text,
   address text,
   instagram text,
   whatsapp text,
@@ -48,10 +52,22 @@ ALTER TABLE public.users
   ADD COLUMN IF NOT EXISTS bio text;
 
 ALTER TABLE public.memories
+  ADD COLUMN IF NOT EXISTS name text,
+  ADD COLUMN IF NOT EXISTS birth_info text,
+  ADD COLUMN IF NOT EXISTS full_address text,
+  ADD COLUMN IF NOT EXISTS message text,
   ADD COLUMN IF NOT EXISTS address text,
   ADD COLUMN IF NOT EXISTS instagram text,
   ADD COLUMN IF NOT EXISTS whatsapp text,
   ADD COLUMN IF NOT EXISTS bio text;
+
+UPDATE public.memories
+SET full_address = address
+WHERE full_address IS NULL AND NULLIF(BTRIM(address), '') IS NOT NULL;
+
+UPDATE public.memories
+SET message = caption
+WHERE message IS NULL AND NULLIF(BTRIM(caption), '') IS NOT NULL;
 
 UPDATE public.users AS profile
 SET auth_user_id = auth_user.id

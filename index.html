@@ -143,20 +143,23 @@
             </div>
             <img id="preview-img" class="preview hidden" alt="Pratinjau foto yang dipilih" />
           </div>
-          <label class="form-field" for="caption-input"><span>Ceritakan momen ini <small>(opsional)</small></span>
-            <input type="text" id="caption-input" placeholder="Contoh: Senja yang tidak terlupakan..." maxlength="200" />
+          <label class="form-field" for="memory-name-input"><span>Nama <small>(opsional)</small></span>
+            <input type="text" id="memory-name-input" placeholder="Nama orang dalam memori" maxlength="150" />
           </label>
-          <label class="form-field" for="memory-address-input"><span>Alamat / lokasi <small>(opsional, dibuka di Google Maps)</small></span>
-            <input type="text" id="memory-address-input" placeholder="Contoh: Monas, Jakarta" maxlength="300" />
+          <label class="form-field" for="memory-birth-info-input"><span>TTL <small>(tempat, tanggal lahir · opsional)</small></span>
+            <input type="text" id="memory-birth-info-input" placeholder="Tempat, tanggal lahir" maxlength="150" />
+          </label>
+          <label class="form-field" for="memory-full-address-input"><span>Alamat lengkap <small>(opsional, dibuka di Google Maps)</small></span>
+            <input type="text" id="memory-full-address-input" placeholder="Alamat lengkap atau nama tempat" maxlength="500" />
+          </label>
+          <label class="form-field" for="memory-message-input"><span>Kesan &amp; pesan <small>(opsional)</small></span>
+            <textarea id="memory-message-input" maxlength="1000" rows="4" placeholder="Tuliskan kesan dan pesan untuk memori ini"></textarea>
           </label>
           <label class="form-field" for="memory-instagram-input"><span>Instagram <small>(opsional)</small></span>
             <input type="text" id="memory-instagram-input" placeholder="@username atau tautan profil" maxlength="200" />
           </label>
           <label class="form-field" for="memory-whatsapp-input"><span>WhatsApp <small>(opsional)</small></span>
             <input type="tel" id="memory-whatsapp-input" placeholder="Nomor dengan kode negara, mis. 628123456789" maxlength="30" />
-          </label>
-          <label class="form-field" for="memory-bio-input"><span>Biodata <small>(opsional)</small></span>
-            <textarea id="memory-bio-input" maxlength="500" rows="4" placeholder="Ceritakan siapa yang ada di memori ini"></textarea>
           </label>
           <button id="upload-btn" class="btn-primary" type="button">Simpan memori <span>→</span></button>
           <div id="upload-status" class="status" role="status"></div>
@@ -252,13 +255,20 @@
     <div class="modal-content memory-modal-content">
       <button class="modal-close" id="memory-close" type="button" aria-label="Tutup">&times;</button>
       <img id="memory-view-img" src="" alt="Memori" />
-      <p id="memory-view-caption"></p>
-      <section id="memory-view-bio-section" class="memory-view-bio hidden">
-        <strong>Biodata</strong>
-        <p id="memory-view-bio"></p>
+      <div class="memory-view-name">
+        <strong>Nama</strong>
+        <p id="memory-view-caption"></p>
+      </div>
+      <section id="memory-view-details" class="memory-view-details">
+        <div><strong>TTL</strong><span id="memory-view-birth-info"></span></div>
+        <div id="memory-view-address-row"><strong>Alamat lengkap</strong><span id="memory-view-address"></span></div>
+      </section>
+      <section id="memory-view-message-section" class="memory-view-message hidden">
+        <strong>Kesan &amp; pesan</strong>
+        <p id="memory-view-message"></p>
       </section>
       <nav id="memory-contact-actions" class="profile-contact-actions hidden" aria-label="Informasi memori">
-        <a id="memory-address-link" class="profile-contact-link hidden" target="_blank" rel="noopener noreferrer">Alamat · Google Maps <span aria-hidden="true">↗</span></a>
+        <a id="memory-address-link" class="profile-contact-link hidden" target="_blank" rel="noopener noreferrer">Buka alamat di Google Maps <span aria-hidden="true">↗</span></a>
         <a id="memory-instagram-link" class="profile-contact-link hidden" target="_blank" rel="noopener noreferrer">Instagram <span aria-hidden="true">↗</span></a>
         <a id="memory-whatsapp-link" class="profile-contact-link hidden" target="_blank" rel="noopener noreferrer">WhatsApp <span aria-hidden="true">↗</span></a>
       </nav>

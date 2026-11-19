@@ -421,15 +421,21 @@ const loadMemories = async () => {
   let needsDetailsMigration = false;
   let { data: memories, error } = await sb
     .from('memories')
-    .select('id, user_id, image_url, caption, address, instagram, whatsapp, bio, created_at')
+    .select('id, user_id, image_url, caption, name, birth_info, full_address, message, address, instagram, whatsapp, bio, created_at')
     .order('created_at', { ascending: false });
 
   if (['42703', 'PGRST204'].includes(error?.code)) {
     needsDetailsMigration = true;
     ({ data: memories, error } = await sb
       .from('memories')
-      .select('id, user_id, image_url, caption, created_at')
+      .select('id, user_id, image_url, caption, address, instagram, whatsapp, bio, created_at')
       .order('created_at', { ascending: false }));
+    if (['42703', 'PGRST204'].includes(error?.code)) {
+      ({ data: memories, error } = await sb
+        .from('memories')
+        .select('id, user_id, image_url, caption, created_at')
+        .order('created_at', { ascending: false }));
+    }
   }
   if (error) {
     console.error('MEM ERR:', error.message);
@@ -464,7 +470,7 @@ const loadMemories = async () => {
   }));
   renderMemories();
   if (needsDetailsMigration) {
-    toast('Jalankan data.sql versi terbaru agar biodata dan detail kontak dapat digunakan.', 'error', 7000);
+    toast('Jalankan data.sql terbaru agar nama, TTL, alamat lengkap, kesan-pesan, Instagram, dan WhatsApp dapat digunakan.', 'error', 7000);
   }
 };
 
@@ -488,11 +494,12 @@ const renderMemories = () => {
     const isAdmin = state.user.role === 'admin';
     const canDelete = isOwner || isAdmin;
     const ownerName = m.users?.full_name ?? 'Anonim';
+    const memoryName = m.name || m.message || m.caption || 'Memori';
 
     return `
       <div class="memory-card" data-id="${m.id}">
-        ${imgWithFallback(m.image_url, m.caption || 'memori')}
-        <div class="memory-caption">${escapeHtml(m.caption || 'Tanpa caption')}</div>
+        ${imgWithFallback(m.image_url, memoryName)}
+        <div class="memory-caption">${escapeHtml(memoryName)}</div>
         <button class="memory-owner" data-open-profile="${m.user_id}" type="button">oleh ${escapeHtml(ownerName)}</button>
         ${canDelete ? `<button class="delete-memory" data-del="${m.id}" title="Hapus">×</button>` : ''}
       </div>
@@ -529,11 +536,18 @@ const openMemoryModal = (id) => {
   if (!m) return;
   $('memory-view-img').src        = m.image_url || PLACEHOLDER.image;
   $('memory-view-img').onerror    = (ev) => { ev.target.onerror = null; ev.target.src = PLACEHOLDER.image; };
-  $('memory-view-caption').textContent = m.caption || 'Tanpa caption';
-  $('memory-view-bio').textContent = m.bio || '';
-  $('memory-view-bio-section').classList.toggle('hidden', !m.bio?.trim());
-  const hasAddress = m.address?.trim()
-    ? setProfileLink('memory-address-link', `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(m.address.trim())}`)
+  const memoryName = m.name || 'Memori';
+  const fullAddress = m.full_address || m.address || '';
+  const message = m.message || m.caption || '';
+  $('memory-view-img').alt = memoryName;
+  $('memory-view-caption').textContent = memoryName;
+  $('memory-view-birth-info').textContent = m.birth_info || '—';
+  $('memory-view-address').textContent = fullAddress || '—';
+  $('memory-view-address-row').classList.toggle('hidden', !fullAddress);
+  $('memory-view-message').textContent = message;
+  $('memory-view-message-section').classList.toggle('hidden', !message.trim());
+  const hasAddress = fullAddress.trim()
+    ? setProfileLink('memory-address-link', `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress.trim())}`)
     : setProfileLink('memory-address-link', null);
   const hasInstagram = setProfileLink('memory-instagram-link', getInstagramUrl(m.instagram));
   const hasWhatsApp = setProfileLink('memory-whatsapp-link', getWhatsAppUrl(m.whatsapp));
@@ -624,11 +638,12 @@ $('upload-btn').addEventListener('click', async () => {
   if (!selectedFile) return toast('Pilih gambar dulu', 'error');
   if (!state.user)   return toast('User belum siap', 'error');
 
-  const caption = $('caption-input').value.trim();
-  const address = $('memory-address-input').value.trim();
+  const name = $('memory-name-input').value.trim();
+  const birthInfo = $('memory-birth-info-input').value.trim();
+  const fullAddress = $('memory-full-address-input').value.trim();
+  const message = $('memory-message-input').value.trim();
   const instagramInput = $('memory-instagram-input').value.trim();
   const whatsappInput = $('memory-whatsapp-input').value.trim();
-  const bio = $('memory-bio-input').value.trim();
   const btn     = $('upload-btn');
   const status  = $('upload-status');
 
@@ -648,17 +663,19 @@ $('upload-btn').addEventListener('click', async () => {
   }
 
   const memoryDetails = {
-    address: address || null,
+    name: name || null,
+    birth_info: birthInfo || null,
+    full_address: fullAddress || null,
+    message: message || null,
     instagram: instagramUrl ? new URL(instagramUrl).pathname.split('/').filter(Boolean)[0] : null,
     whatsapp: whatsappUrl ? whatsappUrl.split('/').pop() : null,
-    bio: bio || null,
   };
   btn.disabled = true;
   btn.textContent = '⏳ Mengunggah...';
 
   try {
     const { error: schemaError } = await sb.from('memories')
-      .select('address, instagram, whatsapp, bio')
+      .select('name, birth_info, full_address, message, instagram, whatsapp')
       .limit(0);
     if (schemaError) {
       if (['42703', 'PGRST204'].includes(schemaError.code)) {
@@ -680,22 +697,22 @@ $('upload-btn').addEventListener('click', async () => {
     const { error: dbErr } = await sb.from('memories').insert({
       user_id: state.user.id,
       image_url: urlData.publicUrl,
-      caption,
       ...memoryDetails,
     });
     if (dbErr) throw dbErr;
 
-    await logActivity('upload_memory', { caption });
+    await logActivity('upload_memory');
 
     status.className = 'status success';
     status.textContent = '✅ Memori berhasil disimpan!';
 
     selectedFile = null;
-    $('caption-input').value = '';
-    $('memory-address-input').value = '';
+    $('memory-name-input').value = '';
+    $('memory-birth-info-input').value = '';
+    $('memory-full-address-input').value = '';
+    $('memory-message-input').value = '';
     $('memory-instagram-input').value = '';
     $('memory-whatsapp-input').value = '';
-    $('memory-bio-input').value = '';
     imageInput.value = '';
     previewImg.classList.add('hidden');
     previewImg.src = '';
