@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f5f6f2" />
+  <title>Memori — ruang untuk cerita</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="assets/memori-icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="assets/memori-icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <div id="loading" class="loading-overlay">
+    <div class="spinner"></div>
+    <p>Menyiapkan ruang memori...</p>
+  </div>
+
+  <section id="auth-section" class="auth-shell hidden">
+    <div class="auth-aside">
+      <a class="brand brand-light" href="#" aria-label="Memori">
+        <img class="brand-icon" src="assets/memori-icon.svg" alt="" />
+        <span>memori<span class="brand-period">.</span></span>
+      </a>
+      <div class="auth-intro">
+        <span class="eyebrow eyebrow-light">RUANG KECIL, CERITA BESAR</span>
+        <h1>Setiap momen punya tempat untuk pulang.</h1>
+        <p>Simpan foto dan cerita berharga, lalu temukan kembali kapan saja.</p>
+      </div>
+      <div class="auth-aside-note"><span class="note-dot"></span> Kenanganmu, tersimpan rapi.</div>
+      <div class="auth-decoration decoration-one"></div>
+      <div class="auth-decoration decoration-two"></div>
+    </div>
+
+    <div class="auth-main">
+      <div class="auth-mobile-brand brand">
+        <img class="brand-icon" src="assets/memori-icon.svg" alt="" />
+        <span>memori<span class="brand-period">.</span></span>
+      </div>
+      <div class="auth-card">
+        <span class="eyebrow">SELAMAT DATANG</span>
+        <h2 id="auth-heading">Masuk ke Memori</h2>
+        <p id="auth-description" class="auth-description">Masuk untuk membuka kembali cerita favoritmu.</p>
+
+        <div id="login-role-picker" class="role-picker" aria-label="Pilih jenis akun">
+          <button type="button" class="role-option active" data-login-role="user">
+            <span class="role-option-icon">♡</span>
+            <span><strong>Pengguna</strong><small>Masuk sebagai user</small></span>
+          </button>
+          <button type="button" class="role-option" data-login-role="admin">
+            <span class="role-option-icon">◇</span>
+            <span><strong>Administrator</strong><small>Masuk sebagai admin</small></span>
+          </button>
+        </div>
+
+        <form id="auth-form">
+          <label id="name-field" class="form-field hidden" for="auth-name">
+            <span>Nama lengkap</span>
+            <input id="auth-name" type="text" autocomplete="name" placeholder="Nama kamu" maxlength="100" />
+          </label>
+          <label class="form-field" for="auth-email">
+            <span>Email</span>
+            <input id="auth-email" type="email" autocomplete="email" placeholder="nama@email.com" required />
+          </label>
+          <label class="form-field" for="auth-password">
+            <span>Kata sandi</span>
+            <input id="auth-password" type="password" autocomplete="current-password" placeholder="Minimal 6 karakter" minlength="6" required />
+          </label>
+          <div id="auth-status" class="auth-status" role="status" aria-live="polite"></div>
+          <button id="auth-submit" class="btn-primary auth-submit" type="submit">Masuk ke akun <span>→</span></button>
+        </form>
+
+        <p class="auth-switch"><span id="auth-switch-prompt">Belum punya akun?</span> <button id="auth-switch-mode" type="button">Daftar sebagai pengguna</button></p>
+        <p class="auth-footnote">Akses admin hanya diberikan oleh administrator sistem.</p>
+      </div>
+      <span class="auth-copyright">© 2026 Memori. Simpan yang berarti.</span>
+    </div>
+  </section>
+
+  <div id="app-section" class="app-shell hidden">
+    <header class="navbar">
+      <a class="brand" href="#" aria-label="Memori beranda">
+        <img class="brand-icon" src="assets/memori-icon.svg" alt="" />
+        <span>memori<span class="brand-period">.</span></span>
+      </a>
+      <div class="nav-right">
+        <span id="role-label" class="role-pill user"><span class="role-indicator"></span>User</span>
+        <button id="profile-btn" class="nav-profile" title="Profil" aria-label="Buka profil">
+          <img id="nav-avatar-img" src="" alt="" />
+          <span id="nav-profile-name"></span>
+        </button>
+        <button id="logout-btn" class="btn-logout" type="button"><span>↪</span><span class="logout-label">Keluar</span></button>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="welcome-banner">
+        <div class="welcome-copy">
+          <span class="eyebrow">ALBUM DIGITALMU</span>
+          <h1>Halo, <span id="welcome-name">teman</span> <span class="wave">✦</span></h1>
+          <p>Setiap foto menyimpan cerita. Yuk, kumpulkan momen terbaikmu.</p>
+        </div>
+        <div class="welcome-art" aria-hidden="true">
+          <span class="art-sun"></span><span class="art-frame frame-back"></span>
+          <span class="art-frame frame-front"><span>✿</span></span>
+          <span class="art-sparkle sparkle-one">✦</span><span class="art-sparkle sparkle-two">✧</span>
+        </div>
+      </section>
+
+      <nav class="tabs" aria-label="Navigasi utama">
+        <button class="tab-btn active" data-tab="gallery"><span>▦</span> Galeri memori</button>
+        <button class="tab-btn" data-tab="upload"><span>＋</span> Tambah memori</button>
+        <button class="tab-btn admin-only hidden" data-tab="admin"><span>◇</span> Panel admin</button>
+      </nav>
+
+      <section id="tab-gallery" class="tab-content active">
+        <div class="gallery-header">
+          <div><span class="eyebrow">KOLEKSI</span><h2>Galeri memori</h2><p class="section-description">Kumpulan momen yang ingin kamu simpan.</p></div>
+          <span id="memory-count" class="badge">0 memori</span>
+        </div>
+        <div id="gallery" class="gallery"></div>
+        <div id="gallery-empty" class="empty-state hidden">
+          <div class="empty-illustration">✿</div>
+          <h3>Belum ada cerita di sini</h3>
+          <p>Mulai kumpulkan momen berhargamu dalam satu tempat.</p>
+          <button class="btn-secondary" type="button" data-go-tab="upload">Tambah memori pertama <span>→</span></button>
+        </div>
+      </section>
+
+      <section id="tab-upload" class="tab-content">
+        <div class="section-heading"><span class="eyebrow">TANGKAP MOMEN</span><h2>Tambah memori baru</h2><p class="section-description">Pilih foto, tambahkan cerita, dan simpan kenanganmu.</p></div>
+        <div class="upload-card">
+          <div class="dropzone" id="dropzone">
+            <input type="file" id="image-input" accept="image/*" hidden />
+            <div id="dropzone-content">
+              <div class="dz-icon">↑</div>
+              <p><strong>Pilih foto</strong> atau tarik ke area ini</p>
+              <small>JPG, PNG, atau WEBP · Maksimal 5 MB</small>
+            </div>
+            <img id="preview-img" class="preview hidden" alt="Pratinjau foto yang dipilih" />
+          </div>
+          <label class="form-field" for="caption-input"><span>Ceritakan momen ini <small>(opsional)</small></span>
+            <input type="text" id="caption-input" placeholder="Contoh: Senja yang tidak terlupakan..." maxlength="200" />
+          </label>
+          <button id="upload-btn" class="btn-primary" type="button">Simpan memori <span>→</span></button>
+          <div id="upload-status" class="status" role="status"></div>
+        </div>
+      </section>
+
+      <section id="tab-admin" class="tab-content">
+        <div class="section-heading"><span class="eyebrow">RUANG ADMINISTRATOR</span><h2>Ringkasan & pengelolaan</h2><p class="section-description">Kelola akun dan pantau aktivitas Memori.</p></div>
+        <div class="stats-grid">
+          <div class="stat-card"><span class="stat-icon">♙</span><div class="stat-value" id="stat-users">0</div><div class="stat-label">Total pengguna</div></div>
+          <div class="stat-card"><span class="stat-icon">▧</span><div class="stat-value" id="stat-memories">0</div><div class="stat-label">Total memori</div></div>
+          <div class="stat-card"><span class="stat-icon">↗</span><div class="stat-value" id="stat-logs">0</div><div class="stat-label">Aktivitas tercatat</div></div>
+        </div>
+        <div class="admin-card">
+          <div class="admin-subtabs">
+            <button class="subtab-btn active" data-subtab="users">Pengguna</button>
+            <button class="subtab-btn" data-subtab="logs">Log aktivitas</button>
+          </div>
+          <div id="subtab-users" class="subtab-content active">
+            <div class="table-wrap"><table class="data-table">
+              <thead><tr><th>Akun</th><th>Nama</th><th>Role</th><th>Perangkat</th><th>Aksi</th></tr></thead>
+              <tbody id="users-tbody"></tbody>
+            </table></div>
+          </div>
+          <div id="subtab-logs" class="subtab-content">
+            <div class="logs-filter"><input type="search" id="log-search" placeholder="Cari aktivitas atau email..." /><button id="refresh-logs" class="btn-secondary" type="button">Muat ulang</button></div>
+            <div class="table-wrap"><table class="data-table">
+              <thead><tr><th>Waktu</th><th>Pengguna</th><th>Aktivitas</th><th>Detail</th></tr></thead>
+              <tbody id="logs-tbody"></tbody>
+            </table></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="profile-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="profile-name">
+    <div class="modal-content">
+      <button class="modal-close" id="profile-close" type="button" aria-label="Tutup">&times;</button>
+      <div class="profile-view">
+        <img id="profile-avatar" src="" alt="" />
+        <span class="eyebrow">PROFIL AKUN</span>
+        <h3 id="profile-name"></h3>
+        <p id="profile-email" class="muted"></p>
+        <span id="profile-role" class="role-badge"></span>
+        <div class="profile-info">
+          <div><strong>Perangkat</strong><span id="profile-device"></span></div>
+          <div><strong>Bergabung</strong><span id="profile-joined"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="memory-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="memory-view-caption">
+    <div class="modal-content memory-modal-content">
+      <button class="modal-close" id="memory-close" type="button" aria-label="Tutup">&times;</button>
+      <img id="memory-view-img" src="" alt="Memori" />
+      <p id="memory-view-caption"></p>
+      <small id="memory-view-date" class="muted"></small>
+    </div>
+  </div>
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+</body>
+</html>
