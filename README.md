@@ -39,4 +39,4 @@ Proyek ini berupa situs statis tanpa proses build:
 2. Pilih preset **Other** dan biarkan Build Command serta Output Directory kosong/default.
 3. Deploy. Setiap push ke branch `main` akan memicu deployment baru.
 
-Vercel menyediakan HTTPS yang dibutuhkan agar PWA dan service worker berfungsi.
+Vercel menyediakan HTTPS yang dibutuhkan agar PWA dan service worker berfungsi. Aplikasi memeriksa versi shell secara berkala dan saat tab kembali aktif; jika ada perubahan, tombol **Perbarui sekarang** akan mengaktifkan versi baru lalu memuat ulang aplikasi.

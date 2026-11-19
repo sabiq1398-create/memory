@@ -249,6 +249,23 @@ img { display: block; max-width: 100%; }
 .memory-modal-content { width: min(100%, 680px); }
 .memory-modal-content img { width: 100%; max-height: 65vh; margin-bottom: 14px; border-radius: 11px; background: #edf0ec; object-fit: contain; }
 .memory-modal-content p { margin-bottom: 5px; font-weight: 600; }
+.app-update-banner {
+  position: fixed; right: 24px; bottom: 24px; z-index: 1800;
+  display: flex; align-items: center; gap: 20px; max-width: min(520px, calc(100vw - 32px));
+  padding: 14px 16px 14px 18px; border: 1px solid #dfe8df; border-radius: 14px;
+  background: white; box-shadow: 0 12px 35px rgba(37,56,44,.16);
+}
+.app-update-copy { display: grid; gap: 2px; }
+.app-update-copy strong { color: var(--ink); font-size: 12px; }
+.app-update-copy span { color: var(--muted); font-size: 11px; }
+.app-update-banner button {
+  display: inline-flex; align-items: center; gap: 8px; flex: 0 0 auto;
+  padding: 9px 12px; border: 0; border-radius: 8px; background: var(--green);
+  color: white; font-size: 11px; font-weight: 700; cursor: pointer;
+}
+.app-update-banner button:hover { background: var(--green-dark); }
+.app-update-banner button:disabled { opacity: .65; cursor: wait; }
+.app-update-banner button span { font-size: 16px; }
 .toast { position: fixed; bottom: 24px; left: 50%; z-index: 2000; max-width: 90vw; padding: 11px 17px; transform: translateX(-50%); border-radius: 10px; background: #293a30; color: white; box-shadow: var(--shadow); font-size: 12px; animation: toast-in .2s ease-out; }
 .toast.error { background: var(--red); }
 .toast.success { background: var(--green); }
@@ -298,6 +315,9 @@ img { display: block; max-width: 100%; }
   .admin-subtabs { padding: 0 13px; }
   .data-table th, .data-table td { padding: 9px 7px; }
   .upload-card { padding: 15px; }
+  .app-update-banner { right: 16px; bottom: 16px; left: 16px; justify-content: space-between; gap: 10px; max-width: none; padding: 12px; }
+  .app-update-copy span { max-width: 200px; font-size: 10px; }
+  .app-update-banner button { padding: 9px 10px; font-size: 10px; }
 }
 @media (max-width: 390px) {
   .role-pill { padding: 6px 8px; font-size: 10px; }

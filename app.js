@@ -5,14 +5,6 @@
 
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js').catch(error => {
-      console.warn('Service worker registration failed:', error);
-    });
-  });
-}
-
 // ==== KONFIGURASI ====
 const SUPABASE_URL = 'https://rxmwpwsvnzzmakemzazr.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4bXdwd3N2bnp6bWFrZW16YXpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUxMTAzNTYsImV4cCI6MjExMDY4NjM1Nn0.fKiSgZEYFIgrOMj4SYdCDKubRS75t4aYvm9HLZnEr-I';
@@ -49,6 +41,120 @@ const LS = {
 // =========================================
 const $ = (id) => document.getElementById(id);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+
+const APP_UPDATE_FILES = [
+  './index.html',
+  './style.css',
+  './app.js',
+  './manifest.json',
+  './assets/memori-icon.svg',
+  './assets/memori-icon-maskable.svg',
+  './assets/memori-icon-192.png',
+  './assets/memori-icon-512.png',
+];
+let serviceWorkerRegistration = null;
+let waitingServiceWorker = null;
+let appShellFingerprint = null;
+let checkingForAppUpdate = false;
+let reloadAfterControllerChange = false;
+
+const showAppUpdate = () => $('app-update-banner').classList.remove('hidden');
+
+const getAppFileFingerprint = async (path, cacheBuster) => {
+  const url = `${path}?memori-update-check=${cacheBuster}`;
+  const response = await fetch(url, { method: 'HEAD', cache: 'no-store' });
+  if (!response.ok) throw new Error(`Gagal memeriksa ${path}: HTTP ${response.status}`);
+
+  const etag = response.headers.get('etag');
+  const lastModified = response.headers.get('last-modified');
+  if (etag || lastModified) {
+    return `${path}:${etag || ''}:${lastModified || ''}:${response.headers.get('content-length') || ''}`;
+  }
+
+  const contentResponse = await fetch(url, { cache: 'no-store' });
+  if (!contentResponse.ok) throw new Error(`Gagal membaca ${path}: HTTP ${contentResponse.status}`);
+  const content = await contentResponse.arrayBuffer();
+  const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', content));
+  return `${path}:${[...digest].map(byte => byte.toString(16).padStart(2, '0')).join('')}`;
+};
+
+const checkForAppUpdate = async () => {
+  if (checkingForAppUpdate || !navigator.onLine) return;
+  checkingForAppUpdate = true;
+
+  try {
+    const cacheBuster = Date.now();
+    const fingerprints = await Promise.all(
+      APP_UPDATE_FILES.map(path => getAppFileFingerprint(path, cacheBuster))
+    );
+    const latestFingerprint = fingerprints.join('\n');
+
+    if (appShellFingerprint === null) {
+      appShellFingerprint = latestFingerprint;
+    } else if (latestFingerprint !== appShellFingerprint) {
+      showAppUpdate();
+    }
+
+    if (serviceWorkerRegistration) await serviceWorkerRegistration.update();
+  } catch (error) {
+    console.warn('Application update check failed:', error);
+  } finally {
+    checkingForAppUpdate = false;
+  }
+};
+
+const activateWaitingServiceWorker = () => {
+  waitingServiceWorker = serviceWorkerRegistration?.waiting || waitingServiceWorker;
+  if (!waitingServiceWorker) return false;
+
+  const button = $('update-app-btn');
+  button.disabled = true;
+  button.textContent = 'Memuat versi baru...';
+  reloadAfterControllerChange = true;
+  waitingServiceWorker.postMessage({ type: 'SKIP_WAITING' });
+  window.setTimeout(() => {
+    if (reloadAfterControllerChange) window.location.reload();
+  }, 10_000);
+  return true;
+};
+
+const setupAppUpdates = async () => {
+  $('update-app-btn').addEventListener('click', () => {
+    if (!activateWaitingServiceWorker()) window.location.reload();
+  });
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (reloadAfterControllerChange) window.location.reload();
+    });
+
+    try {
+      serviceWorkerRegistration = await navigator.serviceWorker.register('./service-worker.js');
+      if (serviceWorkerRegistration.waiting) {
+        waitingServiceWorker = serviceWorkerRegistration.waiting;
+        showAppUpdate();
+      }
+
+      serviceWorkerRegistration.addEventListener('updatefound', () => {
+        const installing = serviceWorkerRegistration.installing;
+        if (!installing) return;
+        installing.addEventListener('statechange', () => {
+          if (installing.state === 'installed' && serviceWorkerRegistration.waiting) {
+            waitingServiceWorker = serviceWorkerRegistration.waiting;
+            showAppUpdate();
+          }
+        });
+      });
+    } catch (error) {
+      console.warn('Service worker registration failed:', error);
+    }
+  }
+
+  window.addEventListener('focus', checkForAppUpdate);
+  window.addEventListener('online', checkForAppUpdate);
+  window.setInterval(checkForAppUpdate, 5 * 60 * 1000);
+  checkForAppUpdate();
+};
 
 const escapeHtml = (str) =>
   String(str ?? '')
@@ -747,5 +853,6 @@ $('profile-modal').addEventListener('click', (e) => {
 // =========================================
 // INIT
 // =========================================
+setupAppUpdates();
 renderAuthMode();
 bootstrap();
