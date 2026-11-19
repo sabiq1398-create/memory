@@ -494,29 +494,51 @@ const renderMemories = () => {
     const isAdmin = state.user.role === 'admin';
     const canDelete = isOwner || isAdmin;
     const ownerName = m.users?.full_name ?? 'Anonim';
-    const memoryName = m.name || m.message || m.caption || 'Memori';
+    const memoryName = m.name || 'Memori';
+    const fullAddress = m.full_address || m.address || '';
+    const message = m.message || m.caption || '';
+    const addressUrl = fullAddress.trim()
+      ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress.trim())}`
+      : null;
+    const instagramUrl = getInstagramUrl(m.instagram);
+    const whatsappUrl = getWhatsAppUrl(m.whatsapp);
 
     return `
-      <div class="memory-card" data-id="${m.id}">
-        ${imgWithFallback(m.image_url, memoryName)}
-        <div class="memory-caption">${escapeHtml(memoryName)}</div>
-        <button class="memory-owner" data-open-profile="${m.user_id}" type="button">oleh ${escapeHtml(ownerName)}</button>
-        ${canDelete ? `<button class="delete-memory" data-del="${m.id}" title="Hapus">×</button>` : ''}
-      </div>
+      <article class="memory-card">
+        <button class="memory-photo-button" data-open-memory="${m.id}" type="button" aria-label="Lihat foto ${escapeHtml(memoryName)}">
+          ${imgWithFallback(m.image_url, memoryName)}
+        </button>
+        <div class="memory-card-body">
+          <button class="memory-info-button" data-open-memory="${m.id}" type="button" aria-label="Lihat detail ${escapeHtml(memoryName)}">
+            <span class="memory-card-name">${escapeHtml(memoryName)}</span>
+            ${m.birth_info ? `<span class="memory-card-row"><span class="memory-card-label">TTL</span><span>${escapeHtml(m.birth_info)}</span></span>` : ''}
+            ${fullAddress ? `<span class="memory-card-row"><span class="memory-card-label">Alamat</span><span>${escapeHtml(fullAddress)}</span></span>` : ''}
+            ${message ? `<span class="memory-card-note">${escapeHtml(message)}</span>` : ''}
+          </button>
+          <div class="memory-card-footer">
+            <button class="memory-owner" data-open-profile="${m.user_id}" type="button">oleh ${escapeHtml(ownerName)}</button>
+            <nav class="memory-card-actions" aria-label="Tautan ${escapeHtml(memoryName)}">
+              ${addressUrl ? `<a class="memory-action-link" href="${escapeHtml(addressUrl)}" target="_blank" rel="noopener noreferrer" aria-label="Buka alamat di Google Maps">⌖ Alamat</a>` : ''}
+              ${instagramUrl ? `<a class="memory-action-link memory-action-instagram" href="${escapeHtml(instagramUrl)}" target="_blank" rel="noopener noreferrer" aria-label="Buka Instagram">◎ Instagram</a>` : ''}
+              ${whatsappUrl ? `<a class="memory-action-link memory-action-whatsapp" href="${escapeHtml(whatsappUrl)}" target="_blank" rel="noopener noreferrer" aria-label="Buka WhatsApp">◉ WhatsApp</a>` : ''}
+              ${canDelete ? `<button class="delete-memory" data-del="${m.id}" type="button" aria-label="Hapus memori ${escapeHtml(memoryName)}" title="Hapus">×</button>` : ''}
+            </nav>
+          </div>
+        </div>
+      </article>
     `;
   }).join('');
 
-  gallery.querySelectorAll('.memory-card').forEach(card => {
-    card.addEventListener('click', (e) => {
-      if (e.target.closest('.delete-memory')) return;
-      const ownerButton = e.target.closest('[data-open-profile]');
-      if (ownerButton) {
-        e.stopPropagation();
-        const memory = state.memories.find(item => String(item.id) === String(card.dataset.id));
-        if (memory?.users) openProfileModal(memory.users);
-        return;
-      }
-      openMemoryModal(card.dataset.id);
+  gallery.querySelectorAll('[data-open-memory]').forEach(button => {
+    button.addEventListener('click', () => {
+      openMemoryModal(button.dataset.openMemory);
+    });
+  });
+
+  gallery.querySelectorAll('[data-open-profile]').forEach(button => {
+    button.addEventListener('click', () => {
+      const memory = state.memories.find(item => String(item.user_id) === String(button.dataset.openProfile));
+      if (memory?.users) openProfileModal(memory.users);
     });
   });
 
