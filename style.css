@@ -103,6 +103,9 @@ img { display: block; max-width: 100%; }
 }
 .form-field input::placeholder { color: #adb5ae; }
 .form-field input:focus { border-color: #749680; box-shadow: 0 0 0 3px rgba(46,100,77,.1); }
+.form-field textarea { width: 100%; min-height: 100px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius-small); color: var(--ink); font: 400 13px/1.5 "DM Sans", sans-serif; resize: vertical; }
+.form-field textarea:focus { border-color: #749680; outline: none; box-shadow: 0 0 0 3px rgba(46,100,77,.1); }
+.form-field textarea::placeholder { color: #adb5ae; }
 .auth-status { min-height: 18px; margin: -4px 0 9px; color: var(--muted); font-size: 12px; }
 .auth-status.error { color: var(--red); }
 .auth-status.success { color: var(--green); }
@@ -257,15 +260,16 @@ img { display: block; max-width: 100%; }
 .profile-edit-content { width: min(100%, 520px); }
 .profile-edit-content h3 { margin-top: 5px; font: 700 20px "Manrope", sans-serif; }
 .profile-edit-content > .muted { margin: 4px 0 18px; }
-.profile-edit-content .form-field textarea { width: 100%; min-height: 100px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius-small); color: var(--ink); font: 400 13px/1.5 "DM Sans", sans-serif; resize: vertical; }
-.profile-edit-content .form-field textarea:focus { border-color: #749680; outline: none; box-shadow: 0 0 0 3px rgba(46,100,77,.1); }
-.profile-edit-content .form-field textarea::placeholder { color: #adb5ae; }
 .profile-edit-content .btn-primary { width: 100%; }
 .btn-profile { background: #edf3ee; color: #3e7054; }
 .btn-profile:hover { background: #dce9df; }
 .memory-modal-content { width: min(100%, 1100px); }
 .memory-modal-content img { width: auto; height: auto; max-width: 100%; max-height: 75vh; margin: 0 auto 14px; border-radius: 11px; background: #edf0ec; object-fit: contain; }
 .memory-modal-content p { margin-bottom: 5px; font-weight: 600; }
+.memory-view-bio { margin-top: 13px; padding: 13px 15px; border-radius: 11px; background: #f7f9f6; }
+.memory-view-bio strong { color: var(--ink-soft); font-size: 11px; }
+.memory-view-bio p { margin: 5px 0 0; color: var(--muted); font-size: 12px; white-space: pre-line; overflow-wrap: anywhere; }
+.memory-modal-content .profile-contact-actions { justify-content: flex-start; }
 .app-update-banner {
   position: fixed; right: 24px; bottom: 24px; z-index: 1800;
   display: flex; align-items: center; gap: 20px; max-width: min(520px, calc(100vw - 32px));

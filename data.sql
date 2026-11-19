@@ -22,6 +22,10 @@ CREATE TABLE IF NOT EXISTS public.memories (
   user_id uuid NOT NULL REFERENCES public.users(id),
   image_url text NOT NULL,
   caption text,
+  address text,
+  instagram text,
+  whatsapp text,
+  bio text,
   created_at timestamptz DEFAULT now()
 );
 
@@ -38,6 +42,12 @@ ALTER TABLE public.users
   ADD COLUMN IF NOT EXISTS auth_user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE;
 
 ALTER TABLE public.users
+  ADD COLUMN IF NOT EXISTS address text,
+  ADD COLUMN IF NOT EXISTS instagram text,
+  ADD COLUMN IF NOT EXISTS whatsapp text,
+  ADD COLUMN IF NOT EXISTS bio text;
+
+ALTER TABLE public.memories
   ADD COLUMN IF NOT EXISTS address text,
   ADD COLUMN IF NOT EXISTS instagram text,
   ADD COLUMN IF NOT EXISTS whatsapp text,

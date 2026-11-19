@@ -418,11 +418,19 @@ const updateRoleUI = () => {
 // MEMORIES
 // =========================================
 const loadMemories = async () => {
-  const { data: memories, error } = await sb
+  let needsDetailsMigration = false;
+  let { data: memories, error } = await sb
     .from('memories')
-    .select('id, user_id, image_url, caption, created_at')
+    .select('id, user_id, image_url, caption, address, instagram, whatsapp, bio, created_at')
     .order('created_at', { ascending: false });
 
+  if (['42703', 'PGRST204'].includes(error?.code)) {
+    needsDetailsMigration = true;
+    ({ data: memories, error } = await sb
+      .from('memories')
+      .select('id, user_id, image_url, caption, created_at')
+      .order('created_at', { ascending: false }));
+  }
   if (error) {
     console.error('MEM ERR:', error.message);
     toast('Gagal load memori: ' + error.message, 'error');
@@ -437,7 +445,7 @@ const loadMemories = async () => {
       .select('id, full_name, avatar_url, address, instagram, whatsapp, bio')
       .in('id', userIds);
     if (['42703', 'PGRST204'].includes(profileError?.code)) {
-      toast('Jalankan data.sql versi terbaru agar informasi profil dapat dimuat.', 'error', 7000);
+      needsDetailsMigration = true;
       ({ data, error: profileError } = await sb
         .from('memory_user_profiles')
         .select('id, full_name, avatar_url')
@@ -455,6 +463,9 @@ const loadMemories = async () => {
     users: profiles.find(profile => profile.id === memory.user_id) ?? null,
   }));
   renderMemories();
+  if (needsDetailsMigration) {
+    toast('Jalankan data.sql versi terbaru agar biodata dan detail kontak dapat digunakan.', 'error', 7000);
+  }
 };
 
 const renderMemories = () => {
@@ -519,6 +530,14 @@ const openMemoryModal = (id) => {
   $('memory-view-img').src        = m.image_url || PLACEHOLDER.image;
   $('memory-view-img').onerror    = (ev) => { ev.target.onerror = null; ev.target.src = PLACEHOLDER.image; };
   $('memory-view-caption').textContent = m.caption || 'Tanpa caption';
+  $('memory-view-bio').textContent = m.bio || '';
+  $('memory-view-bio-section').classList.toggle('hidden', !m.bio?.trim());
+  const hasAddress = m.address?.trim()
+    ? setProfileLink('memory-address-link', `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(m.address.trim())}`)
+    : setProfileLink('memory-address-link', null);
+  const hasInstagram = setProfileLink('memory-instagram-link', getInstagramUrl(m.instagram));
+  const hasWhatsApp = setProfileLink('memory-whatsapp-link', getWhatsAppUrl(m.whatsapp));
+  $('memory-contact-actions').classList.toggle('hidden', !hasAddress && !hasInstagram && !hasWhatsApp);
   $('memory-view-date').textContent    = fmtDateTime(m.created_at);
   $('memory-modal').classList.remove('hidden');
 };
@@ -606,15 +625,48 @@ $('upload-btn').addEventListener('click', async () => {
   if (!state.user)   return toast('User belum siap', 'error');
 
   const caption = $('caption-input').value.trim();
+  const address = $('memory-address-input').value.trim();
+  const instagramInput = $('memory-instagram-input').value.trim();
+  const whatsappInput = $('memory-whatsapp-input').value.trim();
+  const bio = $('memory-bio-input').value.trim();
   const btn     = $('upload-btn');
   const status  = $('upload-status');
 
-  btn.disabled = true;
-  btn.textContent = '⏳ Mengunggah...';
+  const instagramUrl = getInstagramUrl(instagramInput);
+  const whatsappUrl = getWhatsAppUrl(whatsappInput);
   status.className = 'status';
   status.textContent = '';
+  if (instagramInput && !instagramUrl) {
+    status.className = 'status error';
+    status.textContent = 'Masukkan username Instagram atau tautan profil yang valid.';
+    return;
+  }
+  if (whatsappInput && !whatsappUrl) {
+    status.className = 'status error';
+    status.textContent = 'Masukkan nomor WhatsApp dengan kode negara, misalnya 628123456789.';
+    return;
+  }
+
+  const memoryDetails = {
+    address: address || null,
+    instagram: instagramUrl ? new URL(instagramUrl).pathname.split('/').filter(Boolean)[0] : null,
+    whatsapp: whatsappUrl ? whatsappUrl.split('/').pop() : null,
+    bio: bio || null,
+  };
+  btn.disabled = true;
+  btn.textContent = '⏳ Mengunggah...';
 
   try {
+    const { error: schemaError } = await sb.from('memories')
+      .select('address, instagram, whatsapp, bio')
+      .limit(0);
+    if (schemaError) {
+      if (['42703', 'PGRST204'].includes(schemaError.code)) {
+        throw new Error('Kolom detail memori belum tersedia. Jalankan data.sql terbaru di Supabase SQL Editor.');
+      }
+      throw schemaError;
+    }
+
     const ext = selectedFile.name.split('.').pop() || 'jpg';
     const fileName = `${state.user.id}/${Date.now()}.${ext}`;
 
@@ -629,6 +681,7 @@ $('upload-btn').addEventListener('click', async () => {
       user_id: state.user.id,
       image_url: urlData.publicUrl,
       caption,
+      ...memoryDetails,
     });
     if (dbErr) throw dbErr;
 
@@ -639,6 +692,10 @@ $('upload-btn').addEventListener('click', async () => {
 
     selectedFile = null;
     $('caption-input').value = '';
+    $('memory-address-input').value = '';
+    $('memory-instagram-input').value = '';
+    $('memory-whatsapp-input').value = '';
+    $('memory-bio-input').value = '';
     imageInput.value = '';
     previewImg.classList.add('hidden');
     previewImg.src = '';

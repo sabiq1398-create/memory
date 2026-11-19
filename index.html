@@ -146,6 +146,18 @@
           <label class="form-field" for="caption-input"><span>Ceritakan momen ini <small>(opsional)</small></span>
             <input type="text" id="caption-input" placeholder="Contoh: Senja yang tidak terlupakan..." maxlength="200" />
           </label>
+          <label class="form-field" for="memory-address-input"><span>Alamat / lokasi <small>(opsional, dibuka di Google Maps)</small></span>
+            <input type="text" id="memory-address-input" placeholder="Contoh: Monas, Jakarta" maxlength="300" />
+          </label>
+          <label class="form-field" for="memory-instagram-input"><span>Instagram <small>(opsional)</small></span>
+            <input type="text" id="memory-instagram-input" placeholder="@username atau tautan profil" maxlength="200" />
+          </label>
+          <label class="form-field" for="memory-whatsapp-input"><span>WhatsApp <small>(opsional)</small></span>
+            <input type="tel" id="memory-whatsapp-input" placeholder="Nomor dengan kode negara, mis. 628123456789" maxlength="30" />
+          </label>
+          <label class="form-field" for="memory-bio-input"><span>Biodata <small>(opsional)</small></span>
+            <textarea id="memory-bio-input" maxlength="500" rows="4" placeholder="Ceritakan siapa yang ada di memori ini"></textarea>
+          </label>
           <button id="upload-btn" class="btn-primary" type="button">Simpan memori <span>→</span></button>
           <div id="upload-status" class="status" role="status"></div>
         </div>
@@ -241,6 +253,15 @@
       <button class="modal-close" id="memory-close" type="button" aria-label="Tutup">&times;</button>
       <img id="memory-view-img" src="" alt="Memori" />
       <p id="memory-view-caption"></p>
+      <section id="memory-view-bio-section" class="memory-view-bio hidden">
+        <strong>Biodata</strong>
+        <p id="memory-view-bio"></p>
+      </section>
+      <nav id="memory-contact-actions" class="profile-contact-actions hidden" aria-label="Informasi memori">
+        <a id="memory-address-link" class="profile-contact-link hidden" target="_blank" rel="noopener noreferrer">Alamat · Google Maps <span aria-hidden="true">↗</span></a>
+        <a id="memory-instagram-link" class="profile-contact-link hidden" target="_blank" rel="noopener noreferrer">Instagram <span aria-hidden="true">↗</span></a>
+        <a id="memory-whatsapp-link" class="profile-contact-link hidden" target="_blank" rel="noopener noreferrer">WhatsApp <span aria-hidden="true">↗</span></a>
+      </nav>
       <small id="memory-view-date" class="muted"></small>
     </div>
   </div>
