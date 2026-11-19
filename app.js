@@ -204,6 +204,47 @@ const fmtDate = (d) =>
   new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 const fmtDateTime = (d) => new Date(d).toLocaleString('id-ID');
 
+const getInstagramUrl = (value) => {
+  const input = String(value || '').trim();
+  if (!input) return null;
+
+  let handle = input.replace(/^@/, '');
+  if (/^(https?:\/\/)?(www\.)?instagram\.com\//i.test(input)) {
+    try {
+      const url = new URL(/^https?:\/\//i.test(input) ? input : `https://${input}`);
+      if (!['instagram.com', 'www.instagram.com'].includes(url.hostname.toLowerCase())) return null;
+      handle = url.pathname.split('/').filter(Boolean)[0] || '';
+    } catch {
+      return null;
+    }
+  }
+
+  return /^[a-zA-Z0-9._]{1,30}$/.test(handle)
+    ? `https://www.instagram.com/${handle}/`
+    : null;
+};
+
+const getWhatsAppUrl = (value) => {
+  const input = String(value || '').trim();
+  if (!input) return null;
+
+  let phone = input;
+  if (/^(https?:\/\/)?(www\.)?wa\.me\//i.test(input)) {
+    try {
+      const url = new URL(/^https?:\/\//i.test(input) ? input : `https://${input}`);
+      if (!['wa.me', 'www.wa.me'].includes(url.hostname.toLowerCase())) return null;
+      phone = url.pathname.split('/').filter(Boolean)[0] || '';
+    } catch {
+      return null;
+    }
+  }
+
+  if (!/^[+\d\s().-]+$/.test(phone)) return null;
+  let digits = phone.replace(/\D/g, '');
+  if (digits.startsWith('0')) digits = `62${digits.slice(1)}`;
+  return /^[1-9]\d{7,14}$/.test(digits) ? `https://wa.me/${digits}` : null;
+};
+
 // Placeholder handling untuk <img>
 const imgWithFallback = (src, alt = '') =>
   `<img src="${escapeHtml(src || PLACEHOLDER.image)}" alt="${escapeHtml(alt)}"
@@ -310,18 +351,51 @@ const activateSession = async (authUser, expectedRole = null) => {
 // =========================================
 // PROFILE UI
 // =========================================
+const setProfileLink = (id, url) => {
+  const link = $(id);
+  if (!url) {
+    link.removeAttribute('href');
+    link.classList.add('hidden');
+    return false;
+  }
+  link.href = url;
+  link.classList.remove('hidden');
+  return true;
+};
+
+const openProfileModal = (profile) => {
+  if (!profile) return;
+  const isOwnProfile = String(profile.id) === String(state.user?.id);
+  const details = isOwnProfile ? { ...state.user, ...profile } : profile;
+  $('profile-avatar').src = details.avatar_url || PLACEHOLDER.avatar(details.full_name || 'U');
+  $('profile-name').textContent = details.full_name || 'Anonim';
+  $('profile-bio').textContent = details.bio || '';
+  $('profile-bio-section').classList.toggle('hidden', !details.bio?.trim());
+
+  const hasAddress = details.address?.trim()
+    ? setProfileLink('profile-address-link', `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(details.address.trim())}`)
+    : setProfileLink('profile-address-link', null);
+  const hasInstagram = setProfileLink('profile-instagram-link', getInstagramUrl(details.instagram));
+  const hasWhatsApp = setProfileLink('profile-whatsapp-link', getWhatsAppUrl(details.whatsapp));
+  $('profile-contact-actions').classList.toggle('hidden', !hasAddress && !hasInstagram && !hasWhatsApp);
+
+  $('profile-account-meta').classList.toggle('hidden', !isOwnProfile);
+  $('profile-private-info').classList.toggle('hidden', !isOwnProfile);
+  if (isOwnProfile) {
+    $('profile-email').textContent = details.email || '';
+    $('profile-role').textContent = details.role === 'admin' ? 'Administrator' : 'Pengguna';
+    $('profile-role').className = `role-badge ${details.role}`;
+    $('profile-device').textContent = details.active_device_info || getDeviceInfo();
+    $('profile-joined').textContent = details.created_at ? fmtDate(details.created_at) : '-';
+  }
+  $('profile-modal').classList.remove('hidden');
+};
+
 const loadProfileUI = () => {
   const u = state.user;
   const avatar = u.avatar_url || PLACEHOLDER.avatar(u.full_name || 'U');
 
   $('nav-avatar-img').src = avatar;
-  $('profile-avatar').src  = avatar;
-  $('profile-name').textContent  = u.full_name || '-';
-  $('profile-email').textContent = u.email;
-  $('profile-role').textContent  = u.role === 'admin' ? 'Administrator' : 'Pengguna';
-  $('profile-role').className    = `role-badge ${u.role}`;
-  $('profile-device').textContent = u.active_device_info || getDeviceInfo();
-  $('profile-joined').textContent = fmtDate(u.created_at);
   $('nav-profile-name').textContent = u.full_name || u.email;
   $('welcome-name').textContent = (u.full_name || 'teman').split(' ')[0];
 
@@ -358,10 +432,17 @@ const loadMemories = async () => {
   const userIds = [...new Set((memories ?? []).map(memory => memory.user_id))];
   let profiles = [];
   if (userIds.length) {
-    const { data, error: profileError } = await sb
+    let { data, error: profileError } = await sb
       .from('memory_user_profiles')
-      .select('id, full_name, avatar_url')
+      .select('id, full_name, avatar_url, address, instagram, whatsapp, bio')
       .in('id', userIds);
+    if (['42703', 'PGRST204'].includes(profileError?.code)) {
+      toast('Jalankan data.sql versi terbaru agar informasi profil dapat dimuat.', 'error', 7000);
+      ({ data, error: profileError } = await sb
+        .from('memory_user_profiles')
+        .select('id, full_name, avatar_url')
+        .in('id', userIds));
+    }
     if (profileError) {
       toast('Gagal memuat profil pemilik memori: ' + profileError.message, 'error');
       return;
@@ -401,7 +482,7 @@ const renderMemories = () => {
       <div class="memory-card" data-id="${m.id}">
         ${imgWithFallback(m.image_url, m.caption || 'memori')}
         <div class="memory-caption">${escapeHtml(m.caption || 'Tanpa caption')}</div>
-        <div class="memory-owner">oleh ${escapeHtml(ownerName)}</div>
+        <button class="memory-owner" data-open-profile="${m.user_id}" type="button">oleh ${escapeHtml(ownerName)}</button>
         ${canDelete ? `<button class="delete-memory" data-del="${m.id}" title="Hapus">×</button>` : ''}
       </div>
     `;
@@ -410,6 +491,13 @@ const renderMemories = () => {
   gallery.querySelectorAll('.memory-card').forEach(card => {
     card.addEventListener('click', (e) => {
       if (e.target.closest('.delete-memory')) return;
+      const ownerButton = e.target.closest('[data-open-profile]');
+      if (ownerButton) {
+        e.stopPropagation();
+        const memory = state.memories.find(item => String(item.id) === String(card.dataset.id));
+        if (memory?.users) openProfileModal(memory.users);
+        return;
+      }
       openMemoryModal(card.dataset.id);
     });
   });
@@ -644,6 +732,7 @@ const loadUsersTable = async () => {
       <td><span class="role-badge ${u.role}">${u.role === 'admin' ? 'Admin' : 'User'}</span></td>
       <td>${u.active_device_id ? escapeHtml(u.active_device_info || 'Aktif') : '<span class="muted">-</span>'}</td>
       <td>
+        <button class="btn-small btn-profile" data-edit-profile="${u.id}">Atur profil</button>
         <button class="btn-small btn-warn" data-toggle-role="${u.id}" data-current-role="${u.role}">
           ${u.role === 'admin' ? 'Jadikan user' : 'Jadikan admin'}
         </button>
@@ -651,6 +740,22 @@ const loadUsersTable = async () => {
       </td>
     </tr>
   `).join('');
+
+  tbody.querySelectorAll('[data-edit-profile]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const profile = data.find(user => String(user.id) === String(btn.dataset.editProfile));
+      if (!profile) return toast('Profil pengguna tidak ditemukan.', 'error');
+      $('profile-edit-form').dataset.userId = profile.id;
+      $('profile-edit-user').textContent = profile.full_name || profile.email;
+      $('edit-profile-address').value = profile.address || '';
+      $('edit-profile-instagram').value = profile.instagram || '';
+      $('edit-profile-whatsapp').value = profile.whatsapp || '';
+      $('edit-profile-bio').value = profile.bio || '';
+      $('profile-edit-status').className = 'status';
+      $('profile-edit-status').textContent = '';
+      $('profile-edit-modal').classList.remove('hidden');
+    });
+  });
 
   tbody.querySelectorAll('[data-toggle-role]').forEach(btn => {
     btn.addEventListener('click', async () => {
@@ -844,10 +949,78 @@ document.querySelector('[data-go-tab="upload"]').addEventListener('click', () =>
 // =========================================
 // PROFILE MODAL
 // =========================================
-$('profile-btn').addEventListener('click', () => $('profile-modal').classList.remove('hidden'));
+$('profile-btn').addEventListener('click', () => openProfileModal(state.user));
 $('profile-close').addEventListener('click', () => $('profile-modal').classList.add('hidden'));
 $('profile-modal').addEventListener('click', (e) => {
   if (e.target.id === 'profile-modal') $('profile-modal').classList.add('hidden');
+});
+$('profile-edit-close').addEventListener('click', () => $('profile-edit-modal').classList.add('hidden'));
+$('profile-edit-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'profile-edit-modal') $('profile-edit-modal').classList.add('hidden');
+});
+$('profile-edit-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (state.user?.role !== 'admin') return toast('Akses administrator diperlukan.', 'error');
+
+  const form = $('profile-edit-form');
+  const userId = form.dataset.userId;
+  if (!userId) return toast('Pilih akun yang akan diperbarui.', 'error');
+  const address = $('edit-profile-address').value.trim();
+  const instagramInput = $('edit-profile-instagram').value.trim();
+  const whatsappInput = $('edit-profile-whatsapp').value.trim();
+  const bio = $('edit-profile-bio').value.trim();
+  const instagramUrl = getInstagramUrl(instagramInput);
+  const whatsappUrl = getWhatsAppUrl(whatsappInput);
+  const status = $('profile-edit-status');
+
+  if (instagramInput && !instagramUrl) {
+    status.className = 'status error';
+    status.textContent = 'Masukkan username Instagram atau tautan profil yang valid.';
+    return;
+  }
+  if (whatsappInput && !whatsappUrl) {
+    status.className = 'status error';
+    status.textContent = 'Masukkan nomor WhatsApp dengan kode negara, misalnya 628123456789.';
+    return;
+  }
+
+  const profileUpdates = {
+    address: address || null,
+    instagram: instagramUrl ? new URL(instagramUrl).pathname.split('/').filter(Boolean)[0] : null,
+    whatsapp: whatsappUrl ? whatsappUrl.split('/').pop() : null,
+    bio: bio || null,
+  };
+  const saveButton = $('profile-edit-save');
+  saveButton.disabled = true;
+  status.className = 'status';
+  status.textContent = 'Menyimpan profil...';
+
+  try {
+    const { error } = await sb.from('users')
+      .update(profileUpdates)
+      .eq('id', userId)
+      .select('id')
+      .single();
+    if (error) throw error;
+
+    if (String(state.user.id) === String(userId)) {
+      Object.assign(state.user, profileUpdates);
+      loadProfileUI();
+    }
+    await logActivity('admin_update_profile', { target_id: userId });
+    $('profile-edit-modal').classList.add('hidden');
+    await loadMemories();
+    toast('Profil berhasil diperbarui.', 'success');
+    if (document.querySelector('.tab-btn.active')?.dataset.tab === 'admin') {
+      await loadUsersTable();
+    }
+  } catch (error) {
+    console.error('Gagal memperbarui profil pengguna:', error);
+    status.className = 'status error';
+    status.textContent = `Gagal menyimpan: ${error.message}`;
+  } finally {
+    saveButton.disabled = false;
+  }
 });
 
 // =========================================

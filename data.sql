@@ -6,6 +6,10 @@ CREATE TABLE IF NOT EXISTS public.users (
   email text NOT NULL UNIQUE,
   full_name text,
   avatar_url text,
+  address text,
+  instagram text,
+  whatsapp text,
+  bio text,
   role text NOT NULL DEFAULT 'user' CHECK (role IN ('admin', 'user')),
   active_device_id text,
   active_device_info text,
@@ -32,6 +36,12 @@ CREATE TABLE IF NOT EXISTS public.activity_logs (
 
 ALTER TABLE public.users
   ADD COLUMN IF NOT EXISTS auth_user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE;
+
+ALTER TABLE public.users
+  ADD COLUMN IF NOT EXISTS address text,
+  ADD COLUMN IF NOT EXISTS instagram text,
+  ADD COLUMN IF NOT EXISTS whatsapp text,
+  ADD COLUMN IF NOT EXISTS bio text;
 
 UPDATE public.users AS profile
 SET auth_user_id = auth_user.id
@@ -126,6 +136,32 @@ AS $$
   );
 $$;
 
+CREATE OR REPLACE FUNCTION public.guard_profile_contact_updates()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = public, pg_temp
+AS $$
+BEGIN
+  IF (SELECT auth.uid()) IS NOT NULL
+     AND NOT public.is_memori_admin()
+     AND (
+       NEW.address IS DISTINCT FROM OLD.address
+       OR NEW.instagram IS DISTINCT FROM OLD.instagram
+       OR NEW.whatsapp IS DISTINCT FROM OLD.whatsapp
+       OR NEW.bio IS DISTINCT FROM OLD.bio
+     ) THEN
+    RAISE EXCEPTION 'Akses administrator diperlukan'
+      USING ERRCODE = '42501';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS guard_profile_contact_updates ON public.users;
+CREATE TRIGGER guard_profile_contact_updates
+  BEFORE UPDATE ON public.users
+  FOR EACH ROW EXECUTE FUNCTION public.guard_profile_contact_updates();
+
 CREATE OR REPLACE FUNCTION public.admin_set_user_role(p_user_id uuid, p_role text)
 RETURNS void
 LANGUAGE plpgsql
@@ -194,14 +230,16 @@ $$;
 CREATE OR REPLACE VIEW public.memory_user_profiles
 WITH (security_barrier = true)
 AS
-  SELECT id, full_name, avatar_url
+  SELECT id, full_name, avatar_url, address, instagram, whatsapp, bio
   FROM public.users;
 
 REVOKE ALL ON FUNCTION public.handle_new_auth_user() FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.is_memori_admin() FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.guard_profile_contact_updates() FROM PUBLIC, anon;
 REVOKE ALL ON FUNCTION public.admin_set_user_role(uuid, text) FROM PUBLIC, anon;
 REVOKE ALL ON FUNCTION public.admin_reset_user_device(uuid) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.is_memori_admin() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.guard_profile_contact_updates() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.admin_set_user_role(uuid, text) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.admin_reset_user_device(uuid) TO authenticated;
 
@@ -210,6 +248,8 @@ REVOKE ALL ON public.memories FROM anon, authenticated;
 REVOKE ALL ON public.activity_logs FROM anon, authenticated;
 GRANT SELECT ON public.users TO authenticated;
 GRANT UPDATE (active_device_id, active_device_info, last_active_at)
+  ON public.users TO authenticated;
+GRANT UPDATE (address, instagram, whatsapp, bio)
   ON public.users TO authenticated;
 GRANT SELECT ON public.memory_user_profiles TO authenticated;
 GRANT SELECT, INSERT, DELETE ON public.memories TO authenticated;
@@ -245,6 +285,10 @@ CREATE POLICY users_update_own_device
   ON public.users FOR UPDATE TO authenticated
   USING (auth_user_id = (SELECT auth.uid()))
   WITH CHECK (auth_user_id = (SELECT auth.uid()));
+CREATE POLICY users_update_profile_admin
+  ON public.users FOR UPDATE TO authenticated
+  USING (public.is_memori_admin())
+  WITH CHECK (public.is_memori_admin());
 
 CREATE POLICY memories_read_signed_in
   ON public.memories FOR SELECT TO authenticated

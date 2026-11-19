@@ -188,14 +188,52 @@
         <img id="profile-avatar" src="" alt="" />
         <span class="eyebrow">PROFIL AKUN</span>
         <h3 id="profile-name"></h3>
-        <p id="profile-email" class="muted"></p>
-        <span id="profile-role" class="role-badge"></span>
-        <div class="profile-info">
+        <div id="profile-account-meta">
+          <p id="profile-email" class="muted"></p>
+          <span id="profile-role" class="role-badge"></span>
+        </div>
+        <section id="profile-bio-section" class="profile-bio-section hidden">
+          <strong>Biodata</strong>
+          <p id="profile-bio"></p>
+        </section>
+        <nav id="profile-contact-actions" class="profile-contact-actions hidden" aria-label="Kontak profil">
+          <a id="profile-address-link" class="profile-contact-link hidden" target="_blank" rel="noopener noreferrer">Alamat <span aria-hidden="true">↗</span></a>
+          <a id="profile-instagram-link" class="profile-contact-link hidden" target="_blank" rel="noopener noreferrer">Instagram <span aria-hidden="true">↗</span></a>
+          <a id="profile-whatsapp-link" class="profile-contact-link hidden" target="_blank" rel="noopener noreferrer">WhatsApp <span aria-hidden="true">↗</span></a>
+        </nav>
+        <div id="profile-private-info" class="profile-info">
           <div><strong>Perangkat</strong><span id="profile-device"></span></div>
           <div><strong>Bergabung</strong><span id="profile-joined"></span></div>
         </div>
       </div>
     </div>
+  </div>
+
+  <div id="profile-edit-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="profile-edit-title">
+    <form id="profile-edit-form" class="modal-content profile-edit-content">
+      <button class="modal-close" id="profile-edit-close" type="button" aria-label="Tutup">&times;</button>
+      <span class="eyebrow">PROFIL PENGGUNA</span>
+      <h3 id="profile-edit-title">Atur informasi profil</h3>
+      <p id="profile-edit-user" class="muted"></p>
+      <label class="form-field" for="edit-profile-address">
+        <span>Alamat</span>
+        <input id="edit-profile-address" type="text" maxlength="300" placeholder="Alamat yang akan dicari di Google Maps" />
+      </label>
+      <label class="form-field" for="edit-profile-instagram">
+        <span>Instagram</span>
+        <input id="edit-profile-instagram" type="text" maxlength="200" placeholder="@username atau tautan profil" />
+      </label>
+      <label class="form-field" for="edit-profile-whatsapp">
+        <span>WhatsApp</span>
+        <input id="edit-profile-whatsapp" type="tel" maxlength="30" placeholder="Nomor dengan kode negara, mis. 628123456789" />
+      </label>
+      <label class="form-field" for="edit-profile-bio">
+        <span>Biodata</span>
+        <textarea id="edit-profile-bio" maxlength="500" rows="4" placeholder="Perkenalan singkat"></textarea>
+      </label>
+      <div id="profile-edit-status" class="status" role="status" aria-live="polite"></div>
+      <button id="profile-edit-save" class="btn-primary" type="submit">Simpan profil <span>→</span></button>
+    </form>
   </div>
 
   <div id="memory-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="memory-view-caption">

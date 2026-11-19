@@ -179,7 +179,8 @@ img { display: block; max-width: 100%; }
 .memory-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
 .memory-card img { width: 100%; height: 190px; object-fit: cover; background: #edf0ec; }
 .memory-card .memory-caption { overflow: hidden; padding: 12px 13px 3px; font-size: 12px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
-.memory-card .memory-owner { overflow: hidden; padding: 0 13px 13px; color: var(--muted); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.memory-card .memory-owner { display: block; width: 100%; overflow: hidden; padding: 0 13px 13px; border: 0; background: transparent; color: var(--muted); font-size: 10px; text-align: left; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+.memory-card .memory-owner:hover { color: var(--green); text-decoration: underline; }
 .delete-memory { position: absolute; top: 9px; right: 9px; width: 30px; height: 30px; border: 0; border-radius: 50%; background: rgba(255,255,255,.94); color: var(--red); font-size: 18px; cursor: pointer; opacity: 0; box-shadow: 0 2px 8px #0002; transition: opacity .16s; }
 .memory-card:hover .delete-memory, .delete-memory:focus-visible { opacity: 1; }
 .empty-state { padding: 62px 20px; border: 1px dashed #dce3db; border-radius: var(--radius); background: rgba(255,255,255,.56); text-align: center; }
@@ -241,13 +242,29 @@ img { display: block; max-width: 100%; }
 .profile-view { padding: 9px 5px 3px; text-align: center; }
 .profile-view img { width: 76px; height: 76px; margin: 0 auto 14px; border-radius: 50%; object-fit: cover; background: var(--green-pale); }
 .profile-view h3 { margin-top: 6px; font: 700 19px "Manrope", sans-serif; }
-.profile-view > .muted { margin: 3px 0 11px; }
+.profile-view #profile-email { margin: 3px 0 11px; }
+#profile-account-meta { display: grid; justify-items: center; gap: 7px; }
 .profile-info { display: grid; gap: 12px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); text-align: left; font-size: 12px; }
 .profile-info div { display: flex; justify-content: space-between; gap: 15px; }
 .profile-info strong { color: var(--ink-soft); }
 .profile-info span { color: var(--muted); text-align: right; }
-.memory-modal-content { width: min(100%, 680px); }
-.memory-modal-content img { width: auto; height: auto; max-width: 100%; max-height: 65vh; margin: 0 auto 14px; border-radius: 11px; background: #edf0ec; object-fit: contain; }
+.profile-bio-section { margin-top: 19px; padding: 15px; border-radius: 12px; background: #f7f9f6; text-align: left; }
+.profile-bio-section strong { color: var(--ink-soft); font-size: 11px; }
+.profile-bio-section p { margin-top: 5px; color: var(--muted); font-size: 12px; white-space: pre-line; overflow-wrap: anywhere; }
+.profile-contact-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 15px; }
+.profile-contact-link { display: inline-flex; align-items: center; gap: 7px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 9px; background: white; color: var(--green); font-size: 11px; font-weight: 700; text-decoration: none; }
+.profile-contact-link:hover { border-color: #bfd0c3; background: var(--green-pale); }
+.profile-edit-content { width: min(100%, 520px); }
+.profile-edit-content h3 { margin-top: 5px; font: 700 20px "Manrope", sans-serif; }
+.profile-edit-content > .muted { margin: 4px 0 18px; }
+.profile-edit-content .form-field textarea { width: 100%; min-height: 100px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius-small); color: var(--ink); font: 400 13px/1.5 "DM Sans", sans-serif; resize: vertical; }
+.profile-edit-content .form-field textarea:focus { border-color: #749680; outline: none; box-shadow: 0 0 0 3px rgba(46,100,77,.1); }
+.profile-edit-content .form-field textarea::placeholder { color: #adb5ae; }
+.profile-edit-content .btn-primary { width: 100%; }
+.btn-profile { background: #edf3ee; color: #3e7054; }
+.btn-profile:hover { background: #dce9df; }
+.memory-modal-content { width: min(100%, 1100px); }
+.memory-modal-content img { width: auto; height: auto; max-width: 100%; max-height: 75vh; margin: 0 auto 14px; border-radius: 11px; background: #edf0ec; object-fit: contain; }
 .memory-modal-content p { margin-bottom: 5px; font-weight: 600; }
 .app-update-banner {
   position: fixed; right: 24px; bottom: 24px; z-index: 1800;
