@@ -26,12 +26,7 @@
         <img class="brand-icon" src="assets/memori-icon.svg" alt="" />
         <span>memori<span class="brand-period">.</span></span>
       </a>
-      <div class="auth-intro">
-        <span class="eyebrow eyebrow-light">RUANG KECIL, CERITA BESAR</span>
-        <h1>Setiap momen punya tempat untuk pulang.</h1>
-        <p>Simpan foto dan cerita berharga, lalu temukan kembali kapan saja.</p>
-      </div>
-      <div class="auth-aside-note"><span class="note-dot"></span> Kenanganmu, tersimpan rapi.</div>
+      <div class="auth-aside-note"><span class="note-dot"></span> Kenanganmu tersimpan rapi di sini.</div>
       <div class="auth-decoration decoration-one"></div>
       <div class="auth-decoration decoration-two"></div>
     </div>
@@ -42,42 +37,78 @@
         <span>memori<span class="brand-period">.</span></span>
       </div>
       <div class="auth-card">
-        <span class="eyebrow">SELAMAT DATANG</span>
-        <h2 id="auth-heading">Masuk ke Memori</h2>
-        <p id="auth-description" class="auth-description">Masuk untuk membuka kembali cerita favoritmu.</p>
+        <div id="auth-content" class="auth-content">
+          <span class="eyebrow">SELAMAT DATANG</span>
+          <h2 id="auth-heading">Masuk ke Memori</h2>
+          <p id="auth-description" class="auth-description">Masuk untuk membuka kembali cerita favoritmu.</p>
 
-        <div id="login-role-picker" class="role-picker" aria-label="Pilih jenis akun">
-          <button type="button" class="role-option active" data-login-role="user">
-            <span class="role-option-icon">♡</span>
-            <span><strong>Pengguna</strong><small>Masuk sebagai user</small></span>
-          </button>
-          <button type="button" class="role-option" data-login-role="admin">
-            <span class="role-option-icon">◇</span>
-            <span><strong>Administrator</strong><small>Masuk sebagai admin</small></span>
-          </button>
+          <div id="login-role-picker" class="role-picker" aria-label="Pilih jenis akun">
+            <button type="button" class="role-option active" data-login-role="user">
+              <span class="role-option-icon">♡</span>
+              <span><strong>Pengguna</strong><small>Masuk sebagai user</small></span>
+            </button>
+            <button type="button" class="role-option" data-login-role="admin">
+              <span class="role-option-icon">◇</span>
+              <span><strong>Administrator</strong><small>Masuk sebagai admin</small></span>
+            </button>
+          </div>
+
+          <form id="auth-form">
+            <label id="name-field" class="form-field hidden" for="auth-name">
+              <span>Nama lengkap</span>
+              <input id="auth-name" type="text" autocomplete="name" placeholder="Nama kamu" maxlength="100" />
+            </label>
+            <label class="form-field" for="auth-email">
+              <span>Email</span>
+              <input id="auth-email" type="email" autocomplete="email" placeholder="nama@email.com" required />
+            </label>
+            <label class="form-field" for="auth-password">
+              <span>Kata sandi</span>
+              <input id="auth-password" type="password" autocomplete="current-password" placeholder="Minimal 6 karakter" minlength="6" required />
+            </label>
+            <div id="auth-status" class="auth-status" role="status" aria-live="polite"></div>
+            <button id="auth-submit" class="btn-primary auth-submit" type="submit">Masuk ke akun <span>→</span></button>
+          </form>
+
+          <p class="auth-switch"><span id="auth-switch-prompt">Belum punya akun?</span> <button id="auth-switch-mode" type="button">Daftar sebagai pengguna</button></p>
+          <p class="auth-footnote">Akses admin hanya diberikan oleh administrator sistem.</p>
         </div>
-
-        <form id="auth-form">
-          <label id="name-field" class="form-field hidden" for="auth-name">
-            <span>Nama lengkap</span>
-            <input id="auth-name" type="text" autocomplete="name" placeholder="Nama kamu" maxlength="100" />
-          </label>
-          <label class="form-field" for="auth-email">
-            <span>Email</span>
-            <input id="auth-email" type="email" autocomplete="email" placeholder="nama@email.com" required />
-          </label>
-          <label class="form-field" for="auth-password">
-            <span>Kata sandi</span>
-            <input id="auth-password" type="password" autocomplete="current-password" placeholder="Minimal 6 karakter" minlength="6" required />
-          </label>
-          <div id="auth-status" class="auth-status" role="status" aria-live="polite"></div>
-          <button id="auth-submit" class="btn-primary auth-submit" type="submit">Masuk ke akun <span>→</span></button>
-        </form>
-
-        <p class="auth-switch"><span id="auth-switch-prompt">Belum punya akun?</span> <button id="auth-switch-mode" type="button">Daftar sebagai pengguna</button></p>
-        <p class="auth-footnote">Akses admin hanya diberikan oleh administrator sistem.</p>
       </div>
       <span class="auth-copyright">© 2026 Memori. Simpan yang berarti.</span>
+    </div>
+
+    <div id="lamp-stage" class="lamp-stage">
+      <button id="lamp-toggle" class="lamp-toggle" type="button" aria-label="Tarik tali lampu untuk membuka formulir masuk" aria-controls="auth-content" aria-expanded="false">
+        <span class="lamp-halo" aria-hidden="true"></span>
+        <svg class="lamp-svg" viewBox="0 0 240 280" aria-hidden="true" focusable="false">
+          <g class="lamp-rays">
+            <path d="M120 18v20" />
+            <path d="M74 32l10 16" />
+            <path d="M166 32l-10 16" />
+            <path d="M44 76l18 7" />
+            <path d="M196 76l-18 7" />
+          </g>
+          <ellipse class="lamp-shadow" cx="120" cy="250" rx="62" ry="12" />
+          <path class="lamp-base" d="M80 236c0-12 18-20 40-20s40 8 40 20c0 10-18 16-40 16s-40-6-40-16Z" />
+          <rect class="lamp-stem" x="112" y="168" width="16" height="62" rx="8" />
+          <g class="lamp-cord-group">
+            <path class="lamp-cord" d="M148 150v56" />
+            <circle class="lamp-knob" cx="148" cy="212" r="7" />
+          </g>
+          <circle class="lamp-bulb" cx="120" cy="156" r="13" />
+          <path class="lamp-shade" d="M76 152c-3 0-5-3-4-7l12-56c2-10 10-16 20-16h32c10 0 18 6 20 16l12 56c1 4-1 7-4 7Z" />
+          <path class="lamp-shade-hi" d="M96 138l8-46c1-6 5-9 11-9" />
+          <g class="lamp-face">
+            <path d="M104 116q5 5 10 0" />
+            <path d="M128 116q5 5 10 0" />
+            <path d="M115 127q6 5 12 0" />
+            <circle cx="99" cy="124" r="4" />
+            <circle cx="146" cy="124" r="4" />
+          </g>
+        </svg>
+        <span class="lamp-action"><span id="lamp-action-text">Tarik tali lampu</span> <span aria-hidden="true">✦</span></span>
+      </button>
+      <p class="lamp-caption">Tarik ke bawah, ruangmu pun menyala.</p>
     </div>
   </section>
 
@@ -112,56 +143,102 @@
       </section>
 
       <nav class="tabs" aria-label="Navigasi utama">
-        <button class="tab-btn active" data-tab="gallery"><span>▦</span> Galeri memori</button>
-        <button class="tab-btn admin-only hidden" data-tab="upload"><span>＋</span> Tambah memori</button>
+        <button class="tab-btn admin-only hidden" data-tab="upload"><span>＋</span> Tambah album</button>
         <button class="tab-btn admin-only hidden" data-tab="admin"><span>◇</span> Panel admin</button>
       </nav>
 
+      <div id="gallery-toolbar" class="gallery-toolbar" aria-label="Pencarian dan filter galeri">
+        <label class="gallery-search" for="gallery-search">
+          <span aria-hidden="true">⌕</span>
+          <input id="gallery-search" type="search" placeholder="Cari nama, alamat, atau caption..." autocomplete="off" />
+        </label>
+        <label id="gallery-region-filter" class="gallery-region-filter hidden" for="gallery-region">
+          <span>Daerah</span>
+          <select id="gallery-region">
+            <option value="">Semua daerah</option>
+          </select>
+        </label>
+      </div>
+
       <section id="tab-gallery" class="tab-content active">
         <div class="gallery-header">
-          <div><span class="eyebrow">KOLEKSI</span><h2>Galeri memori</h2><p class="section-description">Kumpulan momen yang ingin kamu simpan.</p></div>
+          <div><span id="gallery-eyebrow" class="eyebrow">GALERI</span><h2 id="gallery-title">Galeri</h2><p id="gallery-description" class="section-description">Kumpulan kenangan.</p></div>
           <span id="memory-count" class="badge">0 memori</span>
         </div>
         <div id="gallery" class="gallery"></div>
         <div id="gallery-empty" class="empty-state hidden">
           <div class="empty-illustration">✿</div>
-          <h3>Belum ada cerita di sini</h3>
-          <p>Mulai kumpulkan momen berhargamu dalam satu tempat.</p>
-          <button class="btn-secondary admin-only hidden" type="button" data-go-tab="upload">Tambah memori pertama <span>→</span></button>
+          <h3 id="gallery-empty-title">Belum ada album</h3>
+          <p id="gallery-empty-text">Album yang ditambahkan akan muncul di sini.</p>
+          <button class="btn-secondary admin-only hidden" type="button" data-go-tab="upload">Tambah album pertama <span>→</span></button>
         </div>
       </section>
 
       <section id="tab-upload" class="tab-content admin-only hidden">
-        <div class="section-heading"><span class="eyebrow">TANGKAP MOMEN</span><h2>Tambah memori baru</h2><p class="section-description">Pilih foto, tambahkan cerita, dan simpan kenanganmu.</p></div>
+        <div class="section-heading"><span class="eyebrow">TANGKAP MOMEN</span><h2>Tambah data baru</h2><p class="section-description">Tab Biodata memakai data individu lengkap dengan impor Excel; tab lain berisi album dengan judul dan caption.</p></div>
         <div class="upload-card">
-          <div class="dropzone" id="dropzone">
-            <input type="file" id="image-input" accept="image/*" hidden />
-            <div id="dropzone-content">
-              <div class="dz-icon">↑</div>
-              <p><strong>Pilih foto</strong> atau tarik ke area ini</p>
-              <small>JPG, PNG, atau WEBP · Maksimal 5 MB</small>
+          <label class="form-field" for="memory-gallery-input"><span>Galeri tujuan</span>
+            <select id="memory-gallery-input" required>
+              <option value="" selected disabled>Pilih galeri</option>
+            </select>
+          </label>
+          <div id="album-fields">
+            <div class="dropzone" id="dropzone">
+              <input type="file" id="image-input" accept="image/*" multiple hidden />
+              <div id="dropzone-content">
+                <div class="dz-icon">↑</div>
+                <p><strong>Pilih foto album</strong> atau tarik ke area ini</p>
+                <small>JPG, PNG, atau WEBP · Bisa pilih beberapa foto · Maksimal 5 MB per foto</small>
+              </div>
+              <div id="gallery-preview" class="gallery-preview hidden" aria-label="Daftar foto yang dipilih"></div>
             </div>
-            <img id="preview-img" class="preview hidden" alt="Pratinjau foto yang dipilih" />
+            <label class="form-field" for="memory-name-input"><span>Judul album</span>
+              <input type="text" id="memory-name-input" placeholder="Contoh: Foto Bersama Perpisahan Angkatan" maxlength="150" />
+            </label>
+            <label class="form-field" for="memory-message-input"><span>Caption</span>
+              <textarea id="memory-message-input" maxlength="1000" rows="4" placeholder="Tulis caption untuk album ini"></textarea>
+            </label>
           </div>
-          <label class="form-field" for="memory-name-input"><span>Nama <small>(opsional)</small></span>
-            <input type="text" id="memory-name-input" placeholder="Nama orang dalam memori" maxlength="150" />
-          </label>
-          <label class="form-field" for="memory-birth-info-input"><span>TTL <small>(tempat, tanggal lahir · opsional)</small></span>
-            <input type="text" id="memory-birth-info-input" placeholder="Tempat, tanggal lahir" maxlength="150" />
-          </label>
-          <label class="form-field" for="memory-full-address-input"><span>Alamat lengkap <small>(opsional, dibuka di Google Maps)</small></span>
-            <input type="text" id="memory-full-address-input" placeholder="Alamat lengkap atau nama tempat" maxlength="500" />
-          </label>
-          <label class="form-field" for="memory-message-input"><span>Kesan &amp; pesan <small>(opsional)</small></span>
-            <textarea id="memory-message-input" maxlength="1000" rows="4" placeholder="Tuliskan kesan dan pesan untuk memori ini"></textarea>
-          </label>
-          <label class="form-field" for="memory-instagram-input"><span>Instagram <small>(opsional)</small></span>
-            <input type="text" id="memory-instagram-input" placeholder="@username atau tautan profil" maxlength="200" />
-          </label>
-          <label class="form-field" for="memory-whatsapp-input"><span>WhatsApp <small>(opsional)</small></span>
-            <input type="tel" id="memory-whatsapp-input" placeholder="Nomor dengan kode negara, mis. 628123456789" maxlength="30" />
-          </label>
-          <button id="upload-btn" class="btn-primary" type="button">Simpan memori <span>→</span></button>
+          <div id="biodata-fields" class="hidden">
+            <label class="form-field" for="individual-entry-method">
+              <span>Cara menambahkan individu</span>
+              <select id="individual-entry-method">
+                <option value="manual">Isi manual</option>
+                <option value="excel">Impor Excel</option>
+              </select>
+            </label>
+            <div id="individual-manual-fields">
+              <label class="form-field" for="individual-name-input"><span>Nama</span>
+                <input id="individual-name-input" type="text" maxlength="150" placeholder="Nama lengkap" />
+              </label>
+              <label class="form-field" for="individual-birth-info-input"><span>Tanggal acara / TTL <small>(opsional)</small></span>
+                <input id="individual-birth-info-input" type="text" maxlength="150" placeholder="Tanggal acara atau TTL" />
+              </label>
+              <label class="form-field" for="individual-address-input"><span>Alamat lengkap <small>(opsional)</small></span>
+                <input id="individual-address-input" type="text" maxlength="500" placeholder="Alamat lengkap atau nama daerah" />
+              </label>
+              <label class="form-field" for="individual-caption-input"><span>Caption <small>(opsional)</small></span>
+                <textarea id="individual-caption-input" maxlength="1000" rows="4" placeholder="Tulis caption individu"></textarea>
+              </label>
+              <label class="form-field" for="individual-instagram-input"><span>Instagram <small>(opsional)</small></span>
+                <input id="individual-instagram-input" type="text" maxlength="200" placeholder="@username atau tautan profil" />
+              </label>
+              <label class="form-field" for="individual-whatsapp-input"><span>WhatsApp <small>(opsional)</small></span>
+                <input id="individual-whatsapp-input" type="tel" maxlength="30" placeholder="Nomor dengan kode negara" />
+              </label>
+              <small class="muted">Foto memakai placeholder dan dapat diunggah kemudian lewat Edit.</small>
+            </div>
+            <div id="individual-import-fields" class="hidden">
+              <button id="download-individual-template" class="btn-secondary" type="button">Unduh template Excel <span>↓</span></button>
+              <label class="form-field" for="memory-import-input">
+                <span>Pilih file Excel atau CSV</span>
+                <input id="memory-import-input" type="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" />
+              </label>
+              <small class="muted">Kolom wajib: Nama. Kolom opsional: Tanggal acara, Daerah/Alamat, Caption, Instagram, WhatsApp. Foto memakai placeholder dan bisa diunggah lewat Edit.</small>
+              <p id="individual-import-preview" class="muted" aria-live="polite"></p>
+            </div>
+          </div>
+          <button id="upload-btn" class="btn-primary" type="button" disabled>Simpan album <span>→</span></button>
           <div id="upload-status" class="status" role="status"></div>
         </div>
       </section>
@@ -176,12 +253,27 @@
         <div class="admin-card">
           <div class="admin-subtabs">
             <button class="subtab-btn active" data-subtab="users">Pengguna</button>
+            <button class="subtab-btn" data-subtab="galleries">Galeri</button>
             <button class="subtab-btn" data-subtab="logs">Log aktivitas</button>
           </div>
           <div id="subtab-users" class="subtab-content active">
             <div class="table-wrap"><table class="data-table">
               <thead><tr><th>Akun</th><th>Nama</th><th>Role</th><th>Perangkat</th><th>Aksi</th></tr></thead>
               <tbody id="users-tbody"></tbody>
+            </table></div>
+          </div>
+          <div id="subtab-galleries" class="subtab-content">
+            <form id="gallery-form" class="gallery-admin-form">
+              <label class="form-field" for="gallery-name-input"><span>Nama galeri / tab baru</span>
+                <input id="gallery-name-input" type="text" maxlength="60" placeholder="Contoh: Galeri Keluarga" required />
+              </label>
+              <button class="btn-secondary" type="submit">Tambah galeri <span>＋</span></button>
+              <div id="gallery-admin-status" class="status" role="status" aria-live="polite"></div>
+            </form>
+            <p class="muted gallery-admin-hint">Ubah nama tab di bawah lalu simpan. Tab baru langsung muncul di navigasi untuk semua pengguna.</p>
+            <div class="table-wrap"><table class="data-table">
+              <thead><tr><th>Nama tab</th><th>Jumlah kenangan</th><th>Aksi</th></tr></thead>
+              <tbody id="galleries-tbody"></tbody>
             </table></div>
           </div>
           <div id="subtab-logs" class="subtab-content">
@@ -251,20 +343,22 @@
     </form>
   </div>
 
-  <div id="memory-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="memory-view-caption">
+  <div id="memory-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="memory-view-title">
     <div class="modal-content memory-modal-content">
       <button class="modal-close" id="memory-close" type="button" aria-label="Tutup">&times;</button>
-      <img id="memory-view-img" src="" alt="Memori" />
+      <img id="memory-view-img" src="" alt="Album" />
+      <div id="memory-view-gallery" class="memory-view-gallery hidden" aria-label="Galeri foto kenangan"></div>
       <div class="memory-view-name">
-        <strong>Nama</strong>
-        <p id="memory-view-caption"></p>
+        <strong id="memory-view-name-label">Judul</strong>
+        <p id="memory-view-title"></p>
       </div>
-      <section id="memory-view-details" class="memory-view-details">
-        <div><strong>TTL</strong><span id="memory-view-birth-info"></span></div>
+      <section id="memory-view-details" class="memory-view-details hidden">
+        <div><strong>Galeri</strong><span id="memory-view-type"></span></div>
+        <div><strong>Tanggal acara</strong><span id="memory-view-birth-info"></span></div>
         <div id="memory-view-address-row"><strong>Alamat lengkap</strong><span id="memory-view-address"></span></div>
       </section>
       <section id="memory-view-message-section" class="memory-view-message hidden">
-        <strong>Kesan &amp; pesan</strong>
+        <strong>Caption</strong>
         <p id="memory-view-message"></p>
       </section>
       <nav id="memory-contact-actions" class="profile-contact-actions hidden" aria-label="Informasi memori">
@@ -284,23 +378,31 @@
       <img id="memory-edit-preview" class="memory-edit-preview" src="" alt="Pratinjau foto memori" />
       <label class="memory-edit-image-picker" for="memory-edit-image-input">Pilih foto pengganti <span>JPG, PNG, atau WEBP · Maksimal 5 MB</span></label>
       <input id="memory-edit-image-input" type="file" accept="image/*" hidden />
-      <label class="form-field" for="memory-edit-name"><span>Nama</span>
-        <input id="memory-edit-name" type="text" maxlength="150" />
+      <label class="form-field" for="memory-edit-gallery">
+        <span>Galeri</span>
+        <select id="memory-edit-gallery" required>
+          <option value="" selected disabled>Pilih galeri</option>
+        </select>
       </label>
-      <label class="form-field" for="memory-edit-birth-info"><span>TTL</span>
-        <input id="memory-edit-birth-info" type="text" maxlength="150" />
+      <label class="form-field" for="memory-edit-name"><span id="memory-edit-name-label">Judul album</span>
+        <input id="memory-edit-name" type="text" maxlength="150" required />
       </label>
-      <label class="form-field" for="memory-edit-full-address"><span>Alamat lengkap</span>
-        <input id="memory-edit-full-address" type="text" maxlength="500" />
-      </label>
-      <label class="form-field" for="memory-edit-message"><span>Kesan &amp; pesan</span>
+      <div id="memory-edit-biodata-fields" class="hidden">
+        <label class="form-field" for="memory-edit-birth-info"><span>Tanggal acara / TTL</span>
+          <input id="memory-edit-birth-info" type="text" maxlength="150" />
+        </label>
+        <label class="form-field" for="memory-edit-full-address"><span>Alamat lengkap</span>
+          <input id="memory-edit-full-address" type="text" maxlength="500" />
+        </label>
+        <label class="form-field" for="memory-edit-instagram"><span>Instagram</span>
+          <input id="memory-edit-instagram" type="text" maxlength="200" placeholder="@username atau tautan profil" />
+        </label>
+        <label class="form-field" for="memory-edit-whatsapp"><span>WhatsApp</span>
+          <input id="memory-edit-whatsapp" type="tel" maxlength="30" placeholder="Nomor dengan kode negara" />
+        </label>
+      </div>
+      <label class="form-field" for="memory-edit-message"><span>Caption</span>
         <textarea id="memory-edit-message" maxlength="1000" rows="4"></textarea>
-      </label>
-      <label class="form-field" for="memory-edit-instagram"><span>Instagram</span>
-        <input id="memory-edit-instagram" type="text" maxlength="200" placeholder="@username atau tautan profil" />
-      </label>
-      <label class="form-field" for="memory-edit-whatsapp"><span>WhatsApp</span>
-        <input id="memory-edit-whatsapp" type="tel" maxlength="30" placeholder="Nomor dengan kode negara" />
       </label>
       <div id="memory-edit-status" class="status" role="status" aria-live="polite"></div>
       <button id="memory-edit-save" class="btn-primary" type="submit">Simpan perubahan <span>→</span></button>

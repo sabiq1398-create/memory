@@ -17,6 +17,20 @@ CREATE TABLE IF NOT EXISTS public.users (
   created_at timestamptz DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS public.galleries (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  name text NOT NULL CHECK (NULLIF(BTRIM(name), '') IS NOT NULL),
+  slug text,
+  sort_order integer NOT NULL DEFAULT 0,
+  created_at timestamptz DEFAULT now()
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS galleries_slug_key
+  ON public.galleries(slug)
+  WHERE slug IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS galleries_name_key
+  ON public.galleries(lower(btrim(name)));
+
 CREATE TABLE IF NOT EXISTS public.memories (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   user_id uuid NOT NULL REFERENCES public.users(id),
@@ -30,6 +44,9 @@ CREATE TABLE IF NOT EXISTS public.memories (
   instagram text,
   whatsapp text,
   bio text,
+  memory_type text NOT NULL DEFAULT 'individu',
+  gallery_id bigint REFERENCES public.galleries(id),
+  photos jsonb DEFAULT '[]'::jsonb,
   created_at timestamptz DEFAULT now()
 );
 
@@ -59,7 +76,10 @@ ALTER TABLE public.memories
   ADD COLUMN IF NOT EXISTS address text,
   ADD COLUMN IF NOT EXISTS instagram text,
   ADD COLUMN IF NOT EXISTS whatsapp text,
-  ADD COLUMN IF NOT EXISTS bio text;
+  ADD COLUMN IF NOT EXISTS bio text,
+  ADD COLUMN IF NOT EXISTS memory_type text NOT NULL DEFAULT 'individu',
+  ADD COLUMN IF NOT EXISTS gallery_id bigint REFERENCES public.galleries(id),
+  ADD COLUMN IF NOT EXISTS photos jsonb DEFAULT '[]'::jsonb;
 
 UPDATE public.memories
 SET full_address = address
@@ -271,6 +291,7 @@ GRANT EXECUTE ON FUNCTION public.admin_reset_user_device(uuid) TO authenticated;
 
 REVOKE ALL ON public.users FROM anon, authenticated;
 REVOKE ALL ON public.memories FROM anon, authenticated;
+REVOKE ALL ON public.galleries FROM anon, authenticated;
 REVOKE ALL ON public.activity_logs FROM anon, authenticated;
 GRANT SELECT ON public.users TO authenticated;
 GRANT UPDATE (active_device_id, active_device_info, last_active_at)
@@ -279,10 +300,14 @@ GRANT UPDATE (address, instagram, whatsapp, bio)
   ON public.users TO authenticated;
 GRANT SELECT ON public.memory_user_profiles TO authenticated;
 GRANT SELECT, INSERT, DELETE ON public.memories TO authenticated;
-GRANT UPDATE (image_url, name, birth_info, full_address, message, instagram, whatsapp)
+GRANT UPDATE (image_url, name, birth_info, full_address, message, instagram, whatsapp, memory_type, gallery_id, photos)
   ON public.memories TO authenticated;
+GRANT SELECT ON public.galleries TO authenticated;
+GRANT INSERT (name, slug, sort_order) ON public.galleries TO authenticated;
+GRANT UPDATE (name, sort_order) ON public.galleries TO authenticated;
 GRANT SELECT, INSERT ON public.activity_logs TO authenticated;
 GRANT USAGE, SELECT ON SEQUENCE public.memories_id_seq TO authenticated;
+GRANT USAGE, SELECT ON SEQUENCE public.galleries_id_seq TO authenticated;
 
 DO $$
 DECLARE
@@ -294,7 +319,7 @@ BEGIN
     SELECT schemaname, tablename, policyname
     FROM pg_policies
     WHERE schemaname = 'public'
-      AND tablename IN ('users', 'memories', 'activity_logs')
+      AND tablename IN ('users', 'memories', 'galleries', 'activity_logs')
   LOOP
     EXECUTE format('DROP POLICY %I ON %I.%I',
       policy_row.policyname, policy_row.schemaname, policy_row.tablename);
@@ -304,7 +329,19 @@ $$;
 
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.memories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.galleries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.activity_logs ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY galleries_read_signed_in
+  ON public.galleries FOR SELECT TO authenticated
+  USING (true);
+CREATE POLICY galleries_insert_admin
+  ON public.galleries FOR INSERT TO authenticated
+  WITH CHECK (public.is_memori_admin());
+CREATE POLICY galleries_update_admin
+  ON public.galleries FOR UPDATE TO authenticated
+  USING (public.is_memori_admin())
+  WITH CHECK (public.is_memori_admin());
 
 CREATE POLICY users_read_own_or_admin
   ON public.users FOR SELECT TO authenticated
@@ -352,10 +389,17 @@ INSERT INTO storage.buckets (id, name, public)
 VALUES ('memories', 'memories', true)
 ON CONFLICT (id) DO UPDATE SET public = EXCLUDED.public;
 
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('photos', 'photos', true)
+ON CONFLICT (id) DO UPDATE SET public = EXCLUDED.public;
+
 DROP POLICY IF EXISTS memori_memory_files_public_read ON storage.objects;
 DROP POLICY IF EXISTS memori_memory_files_upload_own ON storage.objects;
 DROP POLICY IF EXISTS memori_memory_files_upload_admin ON storage.objects;
 DROP POLICY IF EXISTS memori_memory_files_delete_own_or_admin ON storage.objects;
+DROP POLICY IF EXISTS memori_photo_files_public_read ON storage.objects;
+DROP POLICY IF EXISTS memori_photo_files_upload_admin ON storage.objects;
+DROP POLICY IF EXISTS memori_photo_files_delete_own_or_admin ON storage.objects;
 
 CREATE POLICY memori_memory_files_public_read
   ON storage.objects FOR SELECT TO anon, authenticated
@@ -380,6 +424,68 @@ CREATE POLICY memori_memory_files_delete_own_or_admin
       OR public.is_memori_admin()
     )
   );
+CREATE POLICY memori_photo_files_public_read
+  ON storage.objects FOR SELECT TO anon, authenticated
+  USING (bucket_id = 'photos');
+CREATE POLICY memori_photo_files_upload_admin
+  ON storage.objects FOR INSERT TO authenticated
+  WITH CHECK (
+    bucket_id = 'photos'
+    AND public.is_memori_admin()
+    AND (storage.foldername(name))[1] = (
+      SELECT id::text FROM public.users WHERE auth_user_id = (SELECT auth.uid())
+    )
+  );
+CREATE POLICY memori_photo_files_delete_own_or_admin
+  ON storage.objects FOR DELETE TO authenticated
+  USING (
+    bucket_id = 'photos'
+    AND (
+      (storage.foldername(name))[1] = (
+        SELECT id::text FROM public.users WHERE auth_user_id = (SELECT auth.uid())
+      )
+      OR public.is_memori_admin()
+    )
+  );
 
 -- Promote the first administrator after creating their account in Supabase Auth:
 -- UPDATE public.users SET role = 'admin' WHERE email = 'admin@example.com';
+
+ALTER TABLE public.memories
+  ADD COLUMN IF NOT EXISTS photos jsonb DEFAULT '[]'::jsonb;
+ALTER TABLE public.memories
+  ADD COLUMN IF NOT EXISTS memory_type text NOT NULL DEFAULT 'individu';
+UPDATE public.memories
+SET photos = '[]'::jsonb
+WHERE photos IS NULL;
+UPDATE public.memories
+SET memory_type = 'individu'
+WHERE memory_type IS NULL;
+ALTER TABLE public.memories
+  ALTER COLUMN photos SET DEFAULT '[]'::jsonb,
+  ALTER COLUMN photos SET NOT NULL,
+  ALTER COLUMN memory_type SET DEFAULT 'individu',
+  ALTER COLUMN memory_type SET NOT NULL;
+
+INSERT INTO public.galleries (name, slug, sort_order)
+SELECT 'Galeri Individu', 'individu', 0
+WHERE NOT EXISTS (SELECT 1 FROM public.galleries WHERE slug = 'individu');
+
+INSERT INTO public.galleries (name, slug, sort_order)
+SELECT 'Galeri Kenangan', 'bersama', 1
+WHERE NOT EXISTS (SELECT 1 FROM public.galleries WHERE slug = 'bersama');
+
+UPDATE public.memories AS memory
+SET gallery_id = gallery.id
+FROM public.galleries AS gallery
+WHERE memory.gallery_id IS NULL
+  AND gallery.slug = memory.memory_type;
+
+UPDATE public.memories
+SET gallery_id = (SELECT id FROM public.galleries WHERE slug = 'individu')
+WHERE gallery_id IS NULL;
+
+CREATE INDEX IF NOT EXISTS memories_gallery_id_idx
+  ON public.memories (gallery_id);
+
+NOTIFY pgrst, 'reload schema';

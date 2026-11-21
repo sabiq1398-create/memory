@@ -27,7 +27,11 @@ Buka `http://localhost:8000`.
 
 4. Tambahkan domain produksi dan domain preview Vercel ke URL konfigurasi Auth Supabase.
 
-Setelah pembaruan detail atau izin edit memori, jalankan kembali `data.sql` agar kolom dan policy terbaru tersedia. Admin dapat menambah serta mengedit informasi dan foto memori; RLS membatasi perubahan tersebut hanya untuk admin. Migrasi detail menyalin caption dan alamat lama ke kesan-pesan dan alamat lengkap tanpa menghapus kolom lama. Informasi memori terlihat oleh semua pengguna yang masuk.
+Setelah pembaruan tabel galeri atau galeri multi-foto, jalankan kembali `data.sql` agar tabel `galleries`, kolom `gallery_id`, izin, bucket `photos`, dan cache schema PostgREST diperbarui. Foto baru disimpan di bucket `photos`; bucket `memories` tetap tersedia untuk foto lama. Tab galeri dirender dinamis dari tabel `galleries`; admin dapat menambah galeri baru dan mengganti nama tab lewat **Panel admin → Galeri**. Setiap tab memiliki pencarian dan urutan A–Z berdasarkan nama, judul, atau caption.
+
+Tab **Biodata** (galeri dengan nama `Biodata` atau slug `biodata`/`individu`) menampilkan data individu lengkap: nama, tanggal acara/TTL, alamat lengkap, caption, Instagram, dan WhatsApp, dengan filter daerah. Admin dapat menambah satu data secara manual atau mengimpor banyak baris dari Excel/CSV; tombol **Unduh template Excel** menyediakan kolom Nama, Tanggal acara/TTL, Daerah/Alamat, Caption, Instagram, dan WhatsApp. Foto individu memakai placeholder dan dapat diganti lewat Edit.
+
+Tab lain hanya berisi album: pilih galeri tujuan, unggah hingga 20 foto, lalu isi judul dan caption. Kartu dan detail album hanya menampilkan judul, caption, dan foto. RLS membatasi perubahan data hanya untuk admin. Informasi galeri terlihat oleh semua pengguna yang masuk.
 
 Migrasi pertama mereset role lama menjadi `user` karena versi demo sebelumnya mengizinkan perubahan role dari browser. Migrasi juga mengganti policy RLS pada tabel aplikasi `users`, `memories`, dan `activity_logs`.
 
